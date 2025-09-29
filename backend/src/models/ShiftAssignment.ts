@@ -1,5 +1,6 @@
 /**
- * A manager’s confirmed placement of a staff member into a specific role requirement within a shift.
+ * A manager’s confirmed placement of a staff member 
+ * into a specific role requirement within a shift.
  */
 import {
   Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, CreateDateColumn, Index

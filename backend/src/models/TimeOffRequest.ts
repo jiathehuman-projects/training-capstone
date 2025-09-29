@@ -1,5 +1,5 @@
 /**
- * A staff request for unavailability between dates, requiring manager approval.
+ * A staff request for time off between dates, requiring manager approval.
  */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Index } from 'typeorm';
 import { User } from './User';
