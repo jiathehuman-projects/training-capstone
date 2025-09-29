@@ -1,21 +1,15 @@
-FROM node:20-alpine
-
+FROM node:20-alpine as base
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
 
-# Install dependencies
+FROM base as development
 RUN npm install
-
-# Copy source code
-COPY . .
-
-# Build TypeScript
-RUN npm run build
-
-# Expose port
 EXPOSE 5000
+CMD ["npm", "run", "dev"]
 
-# Start the application
+FROM base as production
+RUN npm install --production
+COPY . .
+RUN npm run build
+EXPOSE 5000
 CMD ["npm", "start"]

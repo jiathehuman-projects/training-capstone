@@ -1,4 +1,6 @@
-// /models/ShiftRequirement.ts
+/**
+ * A role and required headcount within a shift (e.g., 2 cooks, 3 servers).
+ */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, Index } from 'typeorm';
 import { Shift } from './Shift';
 

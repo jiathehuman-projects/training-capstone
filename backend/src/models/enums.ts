@@ -14,6 +14,12 @@ export enum ShiftApplicationStatus {
   REJECTED = 'rejected',
 }
 
+export enum ShiftTiming {
+  MORNING = 'morning',
+  AFTERNOON = 'afternoon', 
+  EVENING = 'evening'
+}
+
 export enum OrderStatus {
   DRAFT = 'draft',        // replaces cart
   PLACED = 'placed',
