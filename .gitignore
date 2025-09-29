@@ -57,3 +57,6 @@ lerna-debug.log*
 
 # Local Netlify folder
 .netlify
+
+# Project brief
+.pdf

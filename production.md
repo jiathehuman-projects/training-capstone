@@ -149,3 +149,21 @@
 - Database schema
 - Deployment guide
 - Testing documentation
+
+
+## Entity Relationships Diagram
+![Entity Relationship Diagram](./erd.png)
+### Relationships between tables
+User ↔ Order: Orders are placed by users (customers), and staff identities can appear in scheduling and time-off requests.
+
+Order ↔ OrderItem ↔ MenuItem: Each order contains multiple order items, which reference menu items for analytics.
+
+ShiftTemplate ↔ Shift: Each shift belongs to one daily template (Morning/Afternoon/Evening).
+
+Shift ↔ ShiftRequirement: A shift has multiple role requirements (role name + headcount).
+
+Shift ↔ ShiftApplication ↔ User: Staff users apply to shifts via applications.
+
+ShiftRequirement ↔ ShiftAssignment ↔ User: Assignments link staff users to specific role requirements in a shift.
+
+User ↔ TimeOffRequest: Staff request time off, and managers (also users) approve or deny it.

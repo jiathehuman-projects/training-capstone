@@ -9,7 +9,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || 'restaurant_db',
   synchronize: true, // Set to false in production
   logging: true,
-  entities: ['src/models/**/*.ts'],
+  entities: ['dist/models/**/*.js'],
   subscribers: [],
-  migrations: ['src/migrations/**/*.ts'],
+  migrations: ['dist/migrations/**/*.js'],
 });
