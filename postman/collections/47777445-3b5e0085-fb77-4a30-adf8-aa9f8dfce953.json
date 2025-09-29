@@ -25,12 +25,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:5000/auth/register",
-					"protocol": "http",
+					"raw": "{{base_url}}/auth/register",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
 						"auth",
 						"register"
@@ -87,12 +85,10 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:5000/test",
-					"protocol": "http",
+					"raw": "{{base_url}}/test",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
 						"test"
 					]
@@ -107,8 +103,27 @@
 				"disableBodyPruning": true
 			},
 			"request": {
-				"method": "GET",
-				"header": []
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"testuser\",\r\n    \"password\": \"Password123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
 			},
 			"response": []
 		}
