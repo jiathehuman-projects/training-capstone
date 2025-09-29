@@ -1,6 +1,7 @@
 /**
  * 
- * Stores all people in the system (customers, staff, managers, admins) with their login, roles, and staff-specific availability/status.
+ * Stores all people in the system (customers, staff, managers, admins) with their login,
+ * roles, and staff-specific availability/status.
  */
 import {
   Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index
