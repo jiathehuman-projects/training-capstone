@@ -10,6 +10,9 @@ Restaurant management system developed with modern web technologies, focusing on
 - **Containerization**: Docker & Docker Compose
 - **Testing**: Jest with TypeScript
 
+# Documentation
+https://localhost:5000/api-docs
+
 ## Implementation Status
 
 ### Database Architecture

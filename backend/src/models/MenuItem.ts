@@ -1,4 +1,5 @@
 /**
+ * MenuItem
  * Represents a sellable dish/drink, 
  * including price, category, allergens, promo fields, 
  * and inventory count.

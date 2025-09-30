@@ -10,7 +10,6 @@ import { OrderStatus, PaymentMode, PaymentStatus } from './enums';
 import { decimalTransformer } from './transformers';
 
 @Entity({ name: 'order' })
-@Index(['status'])
 @Index(['placedAt'])
 export class Order {
   @PrimaryGeneratedColumn()
