@@ -128,7 +128,7 @@
 			"response": []
 		},
 		{
-			"name": "New Request",
+			"name": "MenuItem",
 			"id": "47777445-4bf2ba88-4bc7-4483-abe2-ab669231a4fa",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
