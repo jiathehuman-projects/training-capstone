@@ -13,11 +13,11 @@ export default function IndexPage() {
       
         <div className="relative z-10 text-center max-w-4xl mx-auto pt-30">
           <h1 className={title({ size: "lg", class: "mb-6" })}>
-            <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent font-bold">
               Dim Sumthing Wong
             </span>
           </h1>
-          <div className={subtitle({ class: "mb-8 text-gray-300" })}>
+          <div className={subtitle({ class: "mb-8 text-white" })}>
             Your midnight Dim Sum joint • Authentic dim sum with a modern twist
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -27,7 +27,7 @@ export default function IndexPage() {
                 variant: "shadow",
                 radius: "full",
                 size: "lg",
-                class: "bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold px-8 py-3"
+                class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 shadow-lg"
               })}
               href="/order"
             >
@@ -38,7 +38,7 @@ export default function IndexPage() {
                 variant: "bordered",
                 radius: "full", 
                 size: "lg",
-                class: "border-purple-500 text-purple-400 hover:text-purple-300 px-8 py-3"
+                class: "border-black text-black hover:bg-blue-50 hover:border-blue-600 hover:text-blue-600 px-8 py-3 shadow-sm"
               })}
               href="#menu"
             >

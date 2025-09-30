@@ -27,7 +27,7 @@ export const Navbar = () => {
   };
 
   return (
-    <HeroUINavbar maxWidth="xl" position="sticky" className="bg-black/90 backdrop-blur-sm border-b border-gray-800">
+    <HeroUINavbar maxWidth="xl" position="sticky" className="bg-black backdrop-blur-sm border-b border-gray-700">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand className="gap-3 max-w-fit">
           <Link
@@ -35,7 +35,7 @@ export const Navbar = () => {
             href="/"
           >
             <Logo />
-            <p className="font-bold text-white text-lg bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text text-transparent">
+            <p className="font-bold text-lg bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent">
               DIM SUMTHING WONG
             </p>
           </Link>
@@ -46,7 +46,7 @@ export const Navbar = () => {
         <NavbarItem>
           <Link
             href="/"
-            className="text-gray-300 hover:text-purple-400 transition-colors font-medium"
+            className="text-white hover:text-blue-400 transition-colors font-medium"
           >
             Home
           </Link>
@@ -54,7 +54,7 @@ export const Navbar = () => {
         <NavbarItem>
           <Link
             href="/menu"
-            className="text-gray-300 hover:text-purple-400 transition-colors font-medium"
+            className="text-white hover:text-blue-400 transition-colors font-medium"
           >
             Menu
           </Link>
@@ -62,7 +62,7 @@ export const Navbar = () => {
         <NavbarItem>
           <Link
             href="/about"
-            className="text-gray-300 hover:text-purple-400 transition-colors font-medium"
+            className="text-white hover:text-blue-400 transition-colors font-medium"
           >
             About
           </Link>
@@ -73,7 +73,7 @@ export const Navbar = () => {
         {isAuthenticated ? (
           <>
             <NavbarItem className="hidden sm:flex">
-              <span className="text-gray-300">Welcome, {user?.firstName || user?.username}</span>
+              <span className="text-white">Welcome, {user?.firstName || user?.username}</span>
             </NavbarItem>
             <NavbarItem>
               <Button
@@ -82,7 +82,7 @@ export const Navbar = () => {
                   variant: "bordered",
                   radius: "full",
                   size: "sm",
-                  class: "border-gray-600 text-gray-300 hover:border-purple-500 hover:text-purple-400"
+                  class: "border-white text-white hover:border-blue-400 hover:text-blue-400"
                 })}
               >
                 Log Out
@@ -98,7 +98,7 @@ export const Navbar = () => {
                   variant: "light",
                   radius: "full",
                   size: "sm",
-                  class: "text-gray-300 hover:text-purple-400"
+                  class: "text-white hover:text-blue-400"
                 })}
               >
                 Login
@@ -112,7 +112,7 @@ export const Navbar = () => {
                   variant: "flat",
                   radius: "full",
                   size: "sm",
-                  class: "bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700"
+                  class: "bg-blue-600 hover:bg-blue-700 text-white"
                 })}
               >
                 Sign Up
@@ -124,11 +124,10 @@ export const Navbar = () => {
           <Link
             href="/order"
             className={buttonStyles({
-              color: "primary",
-              variant: "shadow",
+              variant: "bordered",
               radius: "full", 
               size: "sm",
-              class: "bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold ml-2"
+              class: "border-white text-white hover:border-blue-400 hover:text-blue-400 ml-2"
             })}
           >
             Order Now

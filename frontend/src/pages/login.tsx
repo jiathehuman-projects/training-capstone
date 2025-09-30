@@ -126,14 +126,14 @@ export default function LoginPage() {
       <section className="min-h-full flex items-center justify-center relative py-12">
         
         <div className="relative w-full max-w-md mx-auto p-6">
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+          <div className="bg-white border border-gray-300 rounded-2xl p-8 shadow-2xl">
             <div className="text-center mb-8">
               <h1 className={title({ size: "md", class: "mb-4" })}>
-                <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent font-bold">
                   Welcome Back
                 </span>
               </h1>
-              <div className={subtitle({ class: "text-gray-400" })}>
+              <div className={subtitle({ class: "text-gray-600" })}>
                 Sign in to your account
               </div>
             </div>
@@ -149,9 +149,9 @@ export default function LoginPage() {
                   isInvalid={!!errors.username}
                   errorMessage={errors.username}
                   classNames={{
-                    input: "bg-gray-900/50 text-white",
-                    inputWrapper: "bg-gray-900/50 border-gray-600 hover:border-purple-500/50 focus-within:border-purple-500",
-                    label: "text-gray-300"
+                    input: "bg-white text-black",
+                    inputWrapper: "bg-white border-gray-300 hover:border-blue-500 focus-within:border-blue-500 shadow-sm",
+                    label: "text-black"
                   }}
                 />
               </div>
@@ -172,16 +172,16 @@ export default function LoginPage() {
                       onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                     >
                       {isPasswordVisible ? (
-                        <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-purple-400" />
+                        <EyeSlashIcon className="h-5 w-5 text-gray-600 hover:text-blue-600" />
                       ) : (
-                        <EyeIcon className="h-5 w-5 text-gray-400 hover:text-purple-400" />
+                        <EyeIcon className="h-5 w-5 text-gray-600 hover:text-blue-600" />
                       )}
                     </button>
                   }
                   classNames={{
-                    input: "bg-gray-900/50 text-white",
-                    inputWrapper: "bg-gray-900/50 border-gray-600 hover:border-purple-500/50 focus-within:border-purple-500",
-                    label: "text-gray-300"
+                    input: "bg-white text-black",
+                    inputWrapper: "bg-white border-gray-300 hover:border-blue-500 focus-within:border-blue-500 shadow-sm",
+                    label: "text-black"
                   }}
                 />
               </div>
@@ -189,7 +189,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 isLoading={isLoading}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
                 size="lg"
               >
                 {isLoading ? "Signing In..." : "Sign In"}
@@ -197,11 +197,11 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-gray-400">
+              <p className="text-gray-600">
                 Don't have an account?{" "}
                 <Link 
                   href="/register" 
-                  className="text-purple-400 hover:text-purple-300 font-medium"
+                  className="text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Sign up
                 </Link>

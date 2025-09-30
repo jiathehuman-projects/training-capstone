@@ -6,7 +6,11 @@ export default function DocsPage() {
     <DefaultLayout>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
         <div className="inline-block max-w-lg text-center justify-center">
-          <h1 className={title()}>About</h1>
+          <h1 className={title()}>
+            <span className="bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent font-bold">
+              About
+            </span>
+          </h1>
         </div>
       </section>
     </DefaultLayout>

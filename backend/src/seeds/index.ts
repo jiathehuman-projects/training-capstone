@@ -15,38 +15,38 @@ import { seedTimeOffRequests } from './shiftSeeds';
 import { seedOrders } from './orderSeeds';
 
 export async function seedDatabase() {
-  console.log('🌱 Starting database seeding...');
+  console.log('Starting database seeding...');
   
   try {
     // Clear existing data (always re-seed as requested)
     await clearExistingData();
     
     // Seed in dependency order
-    console.log('📝 Seeding users...');
+    console.log(' Seeding users...');
     await seedUsers();
     
-    console.log('🍽️ Seeding menu items...');
+    console.log(' Seeding menu items...');
     await seedMenuItems();
     
-    console.log('⏰ Seeding shift templates...');
+    console.log(' Seeding shift templates...');
     await seedShiftTemplates();
     
-    console.log('📅 Seeding shifts...');
+    console.log(' Seeding shifts...');
     await seedShifts();
     
-    console.log('👥 Seeding shift requirements...');
+    console.log(' Seeding shift requirements...');
     await seedShiftRequirements();
     
-    console.log('✋ Seeding shift applications...');
+    console.log(' Seeding shift applications...');
     await seedShiftApplications();
     
-    console.log('🎯 Seeding shift assignments...');
+    console.log(' Seeding shift assignments...');
     await seedShiftAssignments();
     
-    console.log('🏖️ Seeding time off requests...');
+    console.log(' Seeding time off requests...');
     await seedTimeOffRequests();
     
-    console.log('🛒 Seeding orders...');
+    console.log(' Seeding orders...');
     await seedOrders();
     
     console.log('✅ Database seeding completed successfully!');
@@ -58,7 +58,7 @@ export async function seedDatabase() {
 }
 
 async function clearExistingData() {
-  console.log('🧹 Clearing existing data...');
+  console.log('Clearing existing data...');
   
   const entities = [
     'order_item',
@@ -84,5 +84,5 @@ async function clearExistingData() {
     }
   }
   
-  console.log('🗑️ Existing data cleared');
+  console.log('Existing data cleared');
 }
