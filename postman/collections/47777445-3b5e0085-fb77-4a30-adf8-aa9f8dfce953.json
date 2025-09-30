@@ -134,8 +134,42 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZXMiOlsiY3VzdG9tZXIiXSwiaWF0IjoxNzU5MTk5MDc5LCJleHAiOjE3NTkyODU0Nzl9.NVHw1MAWwjwJukyzX2bhJiw7gZDgCjCdtDEnQdw95Do",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
-				"header": []
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/menu?category=mains&available=true&search=salmon",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"menu"
+					],
+					"query": [
+						{
+							"key": "category",
+							"value": "mains"
+						},
+						{
+							"key": "available",
+							"value": "true"
+						},
+						{
+							"key": "search",
+							"value": "salmon"
+						}
+					]
+				}
 			},
 			"response": []
 		},
