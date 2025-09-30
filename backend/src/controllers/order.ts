@@ -59,12 +59,72 @@ const isStaffUser = (currentUser: string | JwtPayload): boolean => {
 };
 
 // Helper function to calculate order totals
-const calculateOrderTotals = (orderItems: OrderItem[]): { subtotal: number; tax: number; total: number } => {
-  const subtotal = orderItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-  const tax = subtotal * 0.08; // 8% tax rate
-  const total = subtotal + tax;
+export const calculateOrderTotals = (orderItems: OrderItem[]): { subtotal: number; tax: number; total: number } => {
+  // Handle empty array case
+  if (!orderItems || orderItems.length === 0) {
+    return { subtotal: 0, tax: 0, total: 0 };
+  }
+
+  // Calculate subtotal with proper null/undefined checks
+  const subtotal = orderItems.reduce((sum, item) => {
+    // Validate item properties
+    const unitPrice = typeof item.unitPrice === 'number' && !isNaN(item.unitPrice) ? item.unitPrice : 0;
+    const quantity = typeof item.quantity === 'number' && !isNaN(item.quantity) ? item.quantity : 0;
+    
+    return sum + (unitPrice * quantity);
+  }, 0);
+
+  // Ensure subtotal is a valid number
+  const validSubtotal = typeof subtotal === 'number' && !isNaN(subtotal) ? subtotal : 0;
   
-  return { subtotal, tax, total };
+  // Calculate tax (8% tax rate)
+  const tax = validSubtotal * 0.08;
+  const validTax = typeof tax === 'number' && !isNaN(tax) ? tax : 0;
+  
+  // Calculate total
+  const total = validSubtotal + validTax;
+  const validTotal = typeof total === 'number' && !isNaN(total) ? total : 0;
+  
+  return { 
+    subtotal: Number(validSubtotal.toFixed(2)), 
+    tax: Number(validTax.toFixed(2)), 
+    total: Number(validTotal.toFixed(2)) 
+  };
+};
+
+// Helper function to validate order item data
+export const validateOrderItem = (item: any, menuItem: MenuItem): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+
+  // Validate quantity
+  if (!item.quantity || typeof item.quantity !== 'number' || item.quantity <= 0 || !Number.isInteger(item.quantity)) {
+    errors.push(`Invalid quantity for item ${menuItem.name}: must be a positive integer`);
+  }
+
+  // Validate menu item availability
+  if (menuItem.qtyOnHand <= 0) {
+    errors.push(`Item ${menuItem.name} is not available`);
+  }
+
+  // Validate quantity against available stock
+  if (item.quantity > menuItem.qtyOnHand) {
+    errors.push(`Insufficient stock for ${menuItem.name}. Available: ${menuItem.qtyOnHand}, Requested: ${item.quantity}`);
+  }
+
+  // Validate menu item is active
+  if (!menuItem.isActive) {
+    errors.push(`Item ${menuItem.name} is no longer available`);
+  }
+
+  // Validate price is valid
+  if (typeof menuItem.price !== 'number' || isNaN(menuItem.price) || menuItem.price < 0) {
+    errors.push(`Invalid price for item ${menuItem.name}`);
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 };
 
 // Helper function to clean up expired draft orders
@@ -149,11 +209,22 @@ export const getMenuItems = async (req: Request, res: Response) => {
 
 export const createOrder = async (req: CreateOrderRequest, res: Response) => {
   try {
+    console.log('🚀 Starting order creation...');
+    
     // Clean up expired drafts periodically
     await cleanupExpiredDrafts();
 
     const userId = getUserIdFromToken(req.currentUser!);
     const { items, tableNumber } = req.body;
+    
+    console.log('📋 Order request data:', { userId, items: items?.length, tableNumber });
+
+    // Validate that we have items to order
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        error: 'Order must contain at least one item'
+      });
+    }
 
     // Validate menu items exist and are available
     const menuItemIds = items.map(item => item.menuItemId);
@@ -165,14 +236,31 @@ export const createOrder = async (req: CreateOrderRequest, res: Response) => {
       });
     }
 
-    // Check availability
+    // Validate each order item using the validation function
+    const validationErrors: string[] = [];
+    const validatedItems: Array<{ item: any; menuItem: MenuItem }> = [];
+
     for (const requestedItem of items) {
       const menuItem = menuItems.find(mi => mi.id === requestedItem.menuItemId);
-      if (!menuItem?.isActive || menuItem.qtyOnHand < requestedItem.quantity) {
-        return res.status(400).json({
-          error: `Menu item "${menuItem?.name || 'Unknown'}" is not available in requested quantity`
-        });
+      if (!menuItem) {
+        validationErrors.push(`Menu item with ID ${requestedItem.menuItemId} not found`);
+        continue;
       }
+
+      const validation = validateOrderItem(requestedItem, menuItem);
+      if (!validation.isValid) {
+        validationErrors.push(...validation.errors);
+      } else {
+        validatedItems.push({ item: requestedItem, menuItem });
+      }
+    }
+
+    // Return all validation errors at once
+    if (validationErrors.length > 0) {
+      return res.status(400).json({
+        error: 'Order validation failed',
+        details: validationErrors
+      });
     }
 
     // Create order
@@ -182,35 +270,77 @@ export const createOrder = async (req: CreateOrderRequest, res: Response) => {
     order.status = OrderStatus.DRAFT;
     order.paymentStatus = PaymentStatus.PENDING;
     
+    // Initialize monetary fields to ensure proper transformer handling
+    order.subtotalAmount = 0;
+    order.taxAmount = 0;
+    order.serviceChargeAmount = 0;
+    order.tipAmount = 0;
+    order.totalAmount = 0;
+    
+    // Save order first to get the ID
     const savedOrder = await orderRepository.save(order);
+    console.log('✅ Order created with ID:', savedOrder.id);
 
-    // Create order items
-    const orderItems: OrderItem[] = [];
-    for (const requestedItem of items) {
-      const menuItem = menuItems.find(mi => mi.id === requestedItem.menuItemId);
-      if (menuItem) {
-        const orderItem = new OrderItem();
-        orderItem.order = savedOrder;
-        orderItem.menuItemId = menuItem.id;
-        orderItem.quantity = requestedItem.quantity;
-        orderItem.unitPrice = menuItem.price;
-        orderItem.nameSnapshot = menuItem.name;
-        orderItem.percentOff = 0;
-        orderItem.lineTotal = menuItem.price * requestedItem.quantity;
-        
-        orderItems.push(orderItem);
-      }
+    // Validate that the order was saved properly
+    if (!savedOrder.id) {
+      throw new Error('Failed to create order - no ID generated');
     }
 
+    // Create order items using validated data
+    const orderItems: OrderItem[] = [];
+    for (const { item: requestedItem, menuItem } of validatedItems) {
+      const orderItem = new OrderItem();
+      
+      // Set both the relation and the explicit ID
+      orderItem.orderId = savedOrder.id;  // Explicitly set the orderId
+      orderItem.order = savedOrder;       // Set the relation
+      orderItem.menuItemId = menuItem.id;
+      orderItem.quantity = requestedItem.quantity;
+      orderItem.unitPrice = menuItem.price;
+      orderItem.nameSnapshot = menuItem.name;
+      orderItem.percentOff = 0;
+      
+      // Calculate line total with validation
+      const lineTotal = menuItem.price * requestedItem.quantity;
+      orderItem.lineTotal = typeof lineTotal === 'number' && !isNaN(lineTotal) ? lineTotal : 0;
+      
+      // Validate order item before adding
+      if (!orderItem.orderId || !orderItem.menuItemId || !orderItem.quantity || orderItem.quantity <= 0) {
+        throw new Error(`Invalid order item data: orderId=${orderItem.orderId}, menuItemId=${orderItem.menuItemId}, quantity=${orderItem.quantity}`);
+      }
+      
+      orderItems.push(orderItem);
+    }
+
+    console.log('📦 Saving order items:', orderItems.length, 'items');
     const savedOrderItems = await orderItemRepository.save(orderItems);
+    console.log('✅ Order items saved successfully');
 
     // Calculate totals
     const { subtotal, tax, total } = calculateOrderTotals(savedOrderItems);
     
-    // Update order with totals
-    savedOrder.subtotalAmount = subtotal;
-    savedOrder.taxAmount = tax;
-    savedOrder.totalAmount = total;
+    // Validate calculated totals before saving
+    const validatedSubtotal = typeof subtotal === 'number' && !isNaN(subtotal) ? subtotal : 0;
+    const validatedTax = typeof tax === 'number' && !isNaN(tax) ? tax : 0;
+    const validatedTotal = typeof total === 'number' && !isNaN(total) ? total : 0;
+    
+    // Update order with validated totals
+    savedOrder.subtotalAmount = validatedSubtotal;
+    savedOrder.taxAmount = validatedTax;
+    savedOrder.totalAmount = validatedTotal;
+    
+    // Update status to PLACED since the order is now complete
+    savedOrder.status = OrderStatus.PLACED;
+    savedOrder.placedAt = new Date();
+    
+    // Log for debugging if values were corrected
+    if (subtotal !== validatedSubtotal || tax !== validatedTax || total !== validatedTotal) {
+      console.warn('Order totals validation corrected invalid values:', {
+        original: { subtotal, tax, total },
+        corrected: { subtotal: validatedSubtotal, tax: validatedTax, total: validatedTotal },
+        orderId: savedOrder.id
+      });
+    }
     
     await orderRepository.save(savedOrder);
 
@@ -223,18 +353,27 @@ export const createOrder = async (req: CreateOrderRequest, res: Response) => {
       message: 'Order created successfully',
       order: {
         id: savedOrder.id,
-        status: savedOrder.status,
+        customerId: savedOrder.customerId,
         tableNumber: savedOrder.tableNumber,
-        subtotal: savedOrder.subtotalAmount,
-        tax: savedOrder.taxAmount,
-        total: savedOrder.totalAmount,
+        status: savedOrder.status,
+        subtotalAmount: savedOrder.subtotalAmount,
+        taxAmount: savedOrder.taxAmount,
+        serviceChargeAmount: savedOrder.serviceChargeAmount,
+        tipAmount: savedOrder.tipAmount,
+        totalAmount: savedOrder.totalAmount,
+        paymentMode: savedOrder.paymentMode,
+        paymentStatus: savedOrder.paymentStatus,
+        placedAt: savedOrder.placedAt,
+        confirmedAt: savedOrder.closedAt, // Using closedAt as confirmedAt equivalent
         estimatedPrepTime: maxPrepTime,
         items: savedOrderItems.map(item => ({
           id: item.id,
+          orderId: item.orderId,
           menuItemId: item.menuItemId,
-          menuItemName: item.nameSnapshot,
-          quantity: item.quantity,
+          nameSnapshot: item.nameSnapshot,
           unitPrice: item.unitPrice,
+          quantity: item.quantity,
+          percentOff: item.percentOff,
           lineTotal: item.lineTotal
         }))
       }
@@ -486,12 +625,28 @@ export const getCustomerOrders = async (req: AuthenticatedRequest, res: Response
 
     const orderHistory = orders.map(order => ({
       id: order.id,
+      customerId: order.customerId,
       tableNumber: order.tableNumber,
       status: order.status,
-      total: order.totalAmount,
+      subtotalAmount: order.subtotalAmount,
+      taxAmount: order.taxAmount,
+      serviceChargeAmount: order.serviceChargeAmount,
+      tipAmount: order.tipAmount,
+      totalAmount: order.totalAmount,
+      paymentMode: order.paymentMode,
+      paymentStatus: order.paymentStatus,
       placedAt: order.placedAt,
-      closedAt: order.closedAt,
-      itemCount: order.items.length
+      confirmedAt: order.closedAt, // Using closedAt as confirmedAt equivalent
+      items: order.items.map(item => ({
+        id: item.id,
+        orderId: item.orderId,
+        menuItemId: item.menuItemId,
+        nameSnapshot: item.nameSnapshot,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        percentOff: item.percentOff,
+        lineTotal: item.lineTotal
+      }))
     }));
 
     return res.status(200).json({

@@ -44,7 +44,7 @@ AppDataSource.initialize()
     
     // Only set up routes after database is connected
     app.use("/auth", authRouter);
-    app.use("/api", orderRouter);
+    app.use("/orders", orderRouter);
     
     /**
      * @swagger

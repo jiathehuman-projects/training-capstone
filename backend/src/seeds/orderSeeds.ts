@@ -141,215 +141,215 @@ export async function seedOrders() {
     // Order 1 items (Completed - Customer 1, Table 5)
     {
       orderId: 1,
-      menuItemId: 1, // Midnight Burger
-      nameSnapshot: 'Midnight Burger',
-      quantity: 1,
-      unitPrice: 18.99,
-      percentOff: 0,
-      lineTotal: 18.99,
-      specialInstructions: null
-    },
-    {
-      orderId: 1,
-      menuItemId: 2, // Night Owl Wings  
-      nameSnapshot: 'Night Owl Wings',
-      quantity: 1,
-      unitPrice: 14.03, // With 15% promo discount
-      percentOff: 15,
-      lineTotal: 14.03,
-      specialInstructions: 'Extra hot sauce'
-    },
-    {
-      orderId: 1,
-      menuItemId: 17, // Night Shift Coffee
-      nameSnapshot: 'Night Shift Coffee',
+      menuItemId: 1, // Har Gow (Shrimp Dumplings)
+      nameSnapshot: 'Har Gow (Shrimp Dumplings)',
       quantity: 2,
-      unitPrice: 4.50,
+      unitPrice: 8.99,
       percentOff: 0,
-      lineTotal: 9.00,
+      lineTotal: 17.98,
       specialInstructions: null
     },
     {
       orderId: 1,
-      menuItemId: 12, // Midnight Mojito (with 20% discount)
-      nameSnapshot: 'Midnight Mojito',
+      menuItemId: 2, // Siu Mai (Pork Dumplings) - with 15% promo discount
+      nameSnapshot: 'Siu Mai (Pork Dumplings)',
+      quantity: 2,
+      unitPrice: 6.79, // With 15% promo discount
+      percentOff: 15,
+      lineTotal: 13.58,
+      specialInstructions: 'Extra fish roe on top'
+    },
+    {
+      orderId: 1,
+      menuItemId: 12, // Jasmine Tea (with 20% discount)
+      nameSnapshot: 'Jasmine Tea',
       quantity: 1,
-      unitPrice: 10.39,
+      unitPrice: 3.99,
       percentOff: 20,
-      lineTotal: 10.39,
-      specialInstructions: 'Light on mint'
+      lineTotal: 3.99,
+      specialInstructions: 'Hot temperature'
+    },
+    {
+      orderId: 1,
+      menuItemId: 10, // Egg Tart (Dan Tat)
+      nameSnapshot: 'Egg Tart (Dan Tat)',
+      quantity: 2,
+      unitPrice: 5.99,
+      percentOff: 0,
+      lineTotal: 11.98,
+      specialInstructions: 'Warm please'
     },
     
     // Order 2 items (Closed - Customer 2, Table 3)
     {
       orderId: 2,
-      menuItemId: 7, // Night Crawler Quesadilla
-      nameSnapshot: 'Night Crawler Quesadilla',
-      quantity: 2,
-      unitPrice: 13.99,
+      menuItemId: 3, // Char Siu Bao (BBQ Pork Buns)
+      nameSnapshot: 'Char Siu Bao (BBQ Pork Buns)',
+      quantity: 3,
+      unitPrice: 9.99,
       percentOff: 0,
-      lineTotal: 27.98,
-      specialInstructions: 'Extra guacamole'
+      lineTotal: 29.97,
+      specialInstructions: 'Extra sauce'
     },
     {
       orderId: 2,
-      menuItemId: 19, // Sleepy Time Tea
-      nameSnapshot: 'Sleepy Time Tea',
+      menuItemId: 14, // Oolong Tea
+      nameSnapshot: 'Oolong Tea',
       quantity: 1,
-      unitPrice: 3.50,
+      unitPrice: 5.99,
       percentOff: 0,
-      lineTotal: 3.50,
+      lineTotal: 5.99,
       specialInstructions: null
     },
     
     // Order 3 items (In Kitchen - Customer 3, Table 7)
     {
       orderId: 3,
-      menuItemId: 8, // Vampire Steak
-      nameSnapshot: 'Vampire Steak',
-      quantity: 1,
-      unitPrice: 28.99,
+      menuItemId: 4, // Xiaolongbao (Soup Dumplings)
+      nameSnapshot: 'Xiaolongbao (Soup Dumplings)',
+      quantity: 2,
+      unitPrice: 12.99,
       percentOff: 0,
-      lineTotal: 28.99,
-      specialInstructions: 'Medium rare'
+      lineTotal: 25.98,
+      specialInstructions: 'Be careful - hot soup inside'
     },
     {
       orderId: 3,
-      menuItemId: 4, // After Hours Pizza
-      nameSnapshot: 'After Hours Pizza',
+      menuItemId: 6, // Lo Mai Gai (Sticky Rice Chicken)
+      nameSnapshot: 'Lo Mai Gai (Sticky Rice Chicken)',
       quantity: 1,
-      unitPrice: 22.99,
+      unitPrice: 11.99,
       percentOff: 0,
-      lineTotal: 22.99,
-      specialInstructions: 'No mushrooms'
+      lineTotal: 11.99,
+      specialInstructions: 'Extra mushrooms'
     },
     {
       orderId: 3,
-      menuItemId: 15, // Starlight Beer
-      nameSnapshot: 'Starlight Beer',
-      quantity: 1,
-      unitPrice: 6.99,
+      menuItemId: 15, // Hong Kong Milk Tea
+      nameSnapshot: 'Hong Kong Milk Tea',
+      quantity: 2,
+      unitPrice: 6.50,
       percentOff: 0,
-      lineTotal: 6.99,
-      specialInstructions: null
+      lineTotal: 13.00,
+      specialInstructions: 'Less sweet'
     },
     
     // Order 4 items (Ready - Customer 1, Table 2)
     {
       orderId: 4,
-      menuItemId: 10, // Owl Sandwich
-      nameSnapshot: 'Owl Sandwich',
+      menuItemId: 5, // Cheong Fun (Rice Rolls)
+      nameSnapshot: 'Cheong Fun (Rice Rolls)',
       quantity: 2,
-      unitPrice: 15.50,
+      unitPrice: 10.99,
       percentOff: 0,
-      lineTotal: 31.00,
-      specialInstructions: 'No mayo on one'
+      lineTotal: 21.98,
+      specialInstructions: 'Shrimp filling'
     },
     {
       orderId: 4,
-      menuItemId: 21, // Fresh Orange Juice
-      nameSnapshot: 'Fresh Orange Juice',
-      quantity: 1,
-      unitPrice: 4.99,
+      menuItemId: 16, // Lychee Sparkling Water
+      nameSnapshot: 'Lychee Sparkling Water',
+      quantity: 2,
+      unitPrice: 5.99,
       percentOff: 0,
-      lineTotal: 4.99,
-      specialInstructions: 'Extra pulp'
+      lineTotal: 11.98,
+      specialInstructions: 'Extra ice'
     },
     
     // Order 5 items (Just Placed - Customer 2, Table 1)
     {
       orderId: 5,
-      menuItemId: 1, // Midnight Burger
-      nameSnapshot: 'Midnight Burger',
+      menuItemId: 1, // Har Gow (Shrimp Dumplings)
+      nameSnapshot: 'Har Gow (Shrimp Dumplings)',
+      quantity: 3,
+      unitPrice: 8.99,
+      percentOff: 0,
+      lineTotal: 26.97,
+      specialInstructions: null
+    },
+    {
+      orderId: 5,
+      menuItemId: 7, // Wu Gok (Taro Dumplings)
+      nameSnapshot: 'Wu Gok (Taro Dumplings)',
       quantity: 2,
-      unitPrice: 18.99,
+      unitPrice: 8.50,
       percentOff: 0,
-      lineTotal: 37.98,
-      specialInstructions: null
+      lineTotal: 17.00,
+      specialInstructions: 'Extra crispy'  
     },
     {
       orderId: 5,
-      menuItemId: 3, // Loaded Nachos Supreme
-      nameSnapshot: 'Loaded Nachos Supreme',
+      menuItemId: 13, // Pu-erh Tea
+      nameSnapshot: 'Pu-erh Tea',
       quantity: 1,
-      unitPrice: 14.99,
+      unitPrice: 6.99,
       percentOff: 0,
-      lineTotal: 14.99,
-      specialInstructions: 'Extra cheese'
+      lineTotal: 6.99,
+      specialInstructions: 'Strong brew'
     },
     {
       orderId: 5,
-      menuItemId: 12, // Midnight Mojito (with discount)
-      nameSnapshot: 'Midnight Mojito',
-      quantity: 1,
-      unitPrice: 10.39,
-      percentOff: 20,
-      lineTotal: 10.39,
-      specialInstructions: null
-    },
-    {
-      orderId: 5,
-      menuItemId: 18, // Dawn Espresso
-      nameSnapshot: 'Dawn Espresso',
-      quantity: 1,
-      unitPrice: 3.99,
+      menuItemId: 10, // Egg Tart (Dan Tat)
+      nameSnapshot: 'Egg Tart (Dan Tat)',
+      quantity: 4,
+      unitPrice: 5.99,
       percentOff: 0,
-      lineTotal: 3.99,
-      specialInstructions: 'Double shot'
+      lineTotal: 23.96,
+      specialInstructions: 'Assorted for sharing'
     },
     
     // Order 6 items (Draft - Customer 3, Table 4)
     {
       orderId: 6,
-      menuItemId: 9, // Sleepwalker Salad
-      nameSnapshot: 'Sleepwalker Salad',
+      menuItemId: 8, // Phoenix Claws (Chicken Feet)
+      nameSnapshot: 'Phoenix Claws (Chicken Feet)',
       quantity: 1,
-      unitPrice: 12.99,
+      unitPrice: 7.50,
       percentOff: 0,
-      lineTotal: 12.99,
-      specialInstructions: 'Dressing on side'
+      lineTotal: 7.50,
+      specialInstructions: 'Mild spice level'
     },
     {
       orderId: 6,
-      menuItemId: 20, // Moonlight Milkshake
-      nameSnapshot: 'Moonlight Milkshake',
-      quantity: 1,
-      unitPrice: 7.99,
+      menuItemId: 9, // Turnip Cake (Lo Bak Go)
+      nameSnapshot: 'Turnip Cake (Lo Bak Go)',
+      quantity: 2,
+      unitPrice: 6.99,
       percentOff: 0,
-      lineTotal: 7.99,
-      specialInstructions: 'Chocolate flavor'
+      lineTotal: 13.98,
+      specialInstructions: 'Well done'
     },
     {
       orderId: 6,
-      menuItemId: 16, // Night Shift Coffee
-      nameSnapshot: 'Night Shift Coffee',
+      menuItemId: 17, // Winter Melon Tea
+      nameSnapshot: 'Winter Melon Tea',
       quantity: 1,
-      unitPrice: 4.50,
+      unitPrice: 4.99,
       percentOff: 0,
-      lineTotal: 4.50,
-      specialInstructions: 'Iced'
+      lineTotal: 4.99,
+      specialInstructions: 'Cold temperature'
     },
     
     // Order 7 items (Cancelled - Customer 1, Table 6)
     {
       orderId: 7,
-      menuItemId: 6, // Moonlight Fish & Chips
-      nameSnapshot: 'Moonlight Fish & Chips',
+      menuItemId: 4, // Xiaolongbao (Soup Dumplings)
+      nameSnapshot: 'Xiaolongbao (Soup Dumplings)',
       quantity: 1,
-      unitPrice: 17.99,
+      unitPrice: 12.99,
       percentOff: 0,
-      lineTotal: 17.99,
+      lineTotal: 12.99,
       specialInstructions: null
     },
     {
       orderId: 7,
-      menuItemId: 17, // Night Shift Coffee
-      nameSnapshot: 'Night Shift Coffee',
-      quantity: 1,
-      unitPrice: 4.50,
+      menuItemId: 18, // Fresh Soy Milk
+      nameSnapshot: 'Fresh Soy Milk',
+      quantity: 2,
+      unitPrice: 3.99,
       percentOff: 0,
-      lineTotal: 4.50,
-      specialInstructions: null
+      lineTotal: 7.98,
+      specialInstructions: 'Hot temperature'
     }
   ];
   
