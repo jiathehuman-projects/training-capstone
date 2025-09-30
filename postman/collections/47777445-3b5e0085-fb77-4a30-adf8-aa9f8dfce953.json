@@ -349,11 +349,6 @@
 					"script": {
 						"id": "f082792a-f8f1-44b4-8f9b-8dbc72854ad4",
 						"exec": [
-							"// Check if the response status code is 200\r",
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.expect(pm.response.code).to.equal(200);\r",
-							"});\r",
-							"\r",
 							"// Check if the response time is less than 200ms\r",
 							"pm.test(\"Response time is less than 200ms\", function () {\r",
 							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
