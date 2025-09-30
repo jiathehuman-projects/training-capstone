@@ -1,11 +1,21 @@
-import { Box, Typography } from '@mui/material';
+import { Route, Routes } from "react-router-dom";
 
-export default function App() {
+import IndexPage from "@/pages/index";
+import DocsPage from "@/pages/docs";
+import PricingPage from "@/pages/pricing";
+import BlogPage from "@/pages/blog";
+import AboutPage from "@/pages/about";
+
+function App() {
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4">
-        test
-      </Typography>
-    </Box>
+    <Routes>
+      <Route element={<IndexPage />} path="/" />
+      <Route element={<DocsPage />} path="/docs" />
+      <Route element={<PricingPage />} path="/pricing" />
+      <Route element={<BlogPage />} path="/blog" />
+      <Route element={<AboutPage />} path="/about" />
+    </Routes>
   );
 }
+
+export default App;
