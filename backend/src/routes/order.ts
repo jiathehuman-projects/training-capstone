@@ -25,7 +25,7 @@ const orderRouter = Router();
 
 orderRouter.get("/menu", getMenuItems);
 
-orderRouter.post("/", authentication, validator.body(createOrderSchema), createOrder);
+orderRouter.post("/order", authentication, validator.body(createOrderSchema), createOrder);
 
 orderRouter.get("/:orderId", authentication, getOrder);
 

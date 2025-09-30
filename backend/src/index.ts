@@ -5,7 +5,9 @@ import cors from 'cors';
 import { AppDataSource } from './data-source';
 import authRouter from './routes/auth';
 import orderRouter from './routes/order';
+import menuRouter from './routes/menu';
 import { setupSwagger } from './config/swagger';
+import path from 'path';
 
 const app = express();
 
@@ -27,43 +29,31 @@ AppDataSource.initialize()
       console.error('❌ Migration failed:', error);
       process.exit(1);
     }
+
+    // Seed database if SEED_DATABASE environment variable is set
+    if (process.env.SEED_DATABASE === 'true') {
+      console.log('🌱 Seeding database...');
+      try {
+        const { seedDatabase } = await import('./seeds/seedData');
+        await seedDatabase();
+        console.log('✅ Database seeding completed!');
+      } catch (error) {
+        console.error('❌ Database seeding failed:', error);
+        // Don't exit on seeding failure in production
+      }
+    }
     
     // Setup Swagger documentation
     setupSwagger(app);
     
+    // Serve uploaded files
+    app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+    
     // Only set up routes after database is connected
     app.use("/auth", authRouter);
     app.use("/api", orderRouter);
+    app.use("/api/menu", menuRouter);
     
-    /**
-     * @swagger
-     * /health:
-     *   get:
-     *     summary: Health check endpoint
-     *     description: Check if the API is running and database is connected
-     *     tags: [System]
-     *     responses:
-     *       200:
-     *         description: API is healthy
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 status:
-     *                   type: string
-     *                   example: OK
-     *                 message:
-     *                   type: string
-     *                   example: API is running
-     *                 timestamp:
-     *                   type: string
-     *                   format: date-time
-     *                   example: 2025-01-15T14:30:00Z
-     *                 database:
-     *                   type: string
-     *                   example: Connected
-     */
     app.get('/health', (req, res) => {
       res.json({ 
         status: 'OK',
@@ -73,25 +63,7 @@ AppDataSource.initialize()
       });
     });
     
-    /**
-     * @swagger
-     * /test:
-     *   get:
-     *     summary: Test endpoint
-     *     description: Simple test endpoint to verify API functionality
-     *     tags: [System]
-     *     responses:
-     *       200:
-     *         description: Test successful
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                   example: Test route working
-     */
+
     app.get('/test', (req, res) => {
       res.json({ message: 'Test route working' });
     });

@@ -21,5 +21,16 @@ else
     exit 1
 fi
 
+# Seed database if SEED_DATABASE is set to true
+if [ "$SEED_DATABASE" = "true" ]; then
+    echo "🌱 Seeding database..."
+    npm run seed:prod
+    if [ $? -eq 0 ]; then
+        echo "✅ Database seeding completed successfully!"
+    else
+        echo "⚠️  Database seeding failed, but continuing..."
+    fi
+fi
+
 echo "🚀 Starting application..."
 exec "$@"

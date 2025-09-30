@@ -43,6 +43,10 @@ lerna-debug.log*
 /frontend/dist
 /backend/dist
 
+# Uploads
+/backend/uploads/*
+!/backend/uploads/.gitkeep
+
 # TypeScript cache
 *.tsbuildinfo
 
