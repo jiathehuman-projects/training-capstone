@@ -1,18 +1,13 @@
 {
 	"info": {
 		"_postman_id": "47777445-3b5e0085-fb77-4a30-adf8-aa9f8dfce953",
-<<<<<<< HEAD
-		"name": "Capstone Project",
-		"description": "> Prototyping your API in Postman streamlines the development process by enabling you to design and test front- and back-end API-driven functionalities within a shared workspace. \n  \n\n## **🪐 Get started**\n\nThis collection serves as a place for teams from the Intergalactic Bank to collaborate on the design of the soon-to-be-developed Intergalactic Bank API. This prototype collection outlines how the service's requests and responses should function. Stakeholders should provide their thoughts and suggestions before we begin development.\n\n## **🧑‍💻 Setting up a mock server**\n\n<img src=\"https://lh7-us.googleusercontent.com/eNxPYjGNGALmKSzZvdhlMuy_XK3C_iQ3rK7tCDiPvr6nePMyggp9NTIAjcZYs7oIy8PU_NCGFKtcBPRZrfplfPyrKsO5SCMRX6OuBpzsL_HuOHxW2DwA3FH2-o0uFJgAZOr7JaQTiIvkayUSrPdsxQQ\">\n\nThis collection is meant to be used alongside a [<b>Postman Mock Server</b>](https://learning.postman.com/docs/designing-and-developing-your-api/mocking-data/setting-up-mock/)**.** Since we are still in the planning phase of the API, we have included several example responses for each request, laying out how we think each possible response will look. Including these example responses also has the added benefit of powering a mock server. By following the instructions, you can set up your own mock server and simulate the behavior of this API by returning the predefined data.\n\n**To set up a mock server:**\n\n1. Select **Mock collection** from the collection's actions menu.\n    \n2. On the **Create a mock server** page, add a name for your mock server, and select to **Save the mock server URL as a new environment variable.** This will create a new environment with the mock’s URL pre-populated.\n    \n3. Select the **New Environment** from the **Environment** dropdown list.\n    \n4. Complete the process by clicking **Create Mock Server**.\n    \n5. Send the request! You should now see that the `{{url}}` variable is using the mock server you set up previously.\n    \n6. Try editing fields in the mocked responses to see your changes reflected in the mock server.\n    \n\n## **🤔Why include tests?**\n\nEach request in the collection includes tests to check the response structure. These tests check that all of the properties that other systems rely on are present and of the expected data type. Once you have the fully built-out service in place, you can swap the mock server URL for the live URL and test that your implementation follows the same guidelines as your prototype. This gives you confidence that you can start integrating this service into your systems.\n\nIf you are adding a new proposed endpoint for this request, try asking Postbot to generate tests for it.\n\n## **🤝Collaborate with us!**\n\nThe Bank Services team wants your team’s input on our API design. Add an [inline comment](https://learning.postman.com/docs/collaborating-in-postman/working-with-your-team/discussing-your-work/) to this collection with your ideas, questions, and suggestions, or reach out to us on our internal Slack by tagging `@bank-services`.",
-=======
 		"name": "🧢💎 Capstone Project",
 		"description": "# Postman API testing\n\nThis collection consists of all the endpoints for the restaurant management software.",
->>>>>>> d9cca66af018904ee35703e7184d57ab33f9a370
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Register request",
+			"name": "Register",
 			"id": "47777445-ec402ffa-17b3-499d-96c7-b48046a234a9",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -30,19 +25,10 @@
 					}
 				},
 				"url": {
-<<<<<<< HEAD
-					"raw": "http://localhost:5000/auth/register",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "5000",
-=======
 					"raw": "{{base_url}}/auth/register",
 					"host": [
 						"{{base_url}}"
 					],
->>>>>>> d9cca66af018904ee35703e7184d57ab33f9a370
 					"path": [
 						"auth",
 						"register"
@@ -52,7 +38,7 @@
 			"response": []
 		},
 		{
-			"name": "Test endpoint",
+			"name": "Test",
 			"event": [
 				{
 					"listen": "test",
@@ -99,30 +85,19 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-<<<<<<< HEAD
-					"raw": "http://localhost:5000/test",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "5000",
-=======
 					"raw": "{{base_url}}/test",
 					"host": [
 						"{{base_url}}"
 					],
->>>>>>> d9cca66af018904ee35703e7184d57ab33f9a370
 					"path": [
 						"test"
 					]
 				}
 			},
 			"response": []
-<<<<<<< HEAD
-=======
 		},
 		{
-			"name": "New Request",
+			"name": "Login",
 			"id": "47777445-5855e386-f215-468c-9bb9-36bccfd00c84",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -151,7 +126,6 @@
 				}
 			},
 			"response": []
->>>>>>> d9cca66af018904ee35703e7184d57ab33f9a370
 		}
 	],
 	"event": [

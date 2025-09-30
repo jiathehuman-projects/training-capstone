@@ -1,3 +1,7 @@
+/**
+ * Schema definition to validate against for user creation
+ * Ported over from Weather App two modules ago
+ */
 import Joi from 'joi';
 
 export const userCreationSchema = Joi.object({

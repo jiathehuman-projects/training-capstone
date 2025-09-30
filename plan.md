@@ -21,13 +21,13 @@ Setup Auth &     Core Features    Menu & Orders     Dashboard        Testing &
 - [x] Project initialization
 - [x] Database schema design
 - [x] Database set up
-- [ ] User authentication system
-  - [ ] JWT implementation
-  - [ ] Login/Register endpoints
-  - [ ] Password hashing
-- [ ] User entity and migrations
-- [ ] Basic frontend setup with routes
-- [ ] Authentication components
+- [x] User authentication system
+  - [x] JWT implementation
+  - [x] Login/Register endpoints
+  - [x] Password hashing
+- [x] User entity and migrations
+- [x] Basic frontend setup with routes
+- [x] Authentication components
   - [ ] Login form
   - [ ] Registration form
   - [ ] Protected routes
