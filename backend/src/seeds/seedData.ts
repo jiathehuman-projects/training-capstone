@@ -1,7 +1,8 @@
 import { AppDataSource } from '../data-source';
 import { User } from '../models/User';
 import { MenuItem } from '../models/MenuItem';
-import { StaffStatus } from '../models/enums';
+import { ShiftTemplate } from '../models/ShiftTemplate';
+import { StaffStatus, ShiftTiming } from '../models/enums';
 import * as bcrypt from 'bcrypt';
 
 export const seedDatabase = async () => {
@@ -15,6 +16,7 @@ export const seedDatabase = async () => {
 
     const userRepository = AppDataSource.getRepository(User);
     const menuItemRepository = AppDataSource.getRepository(MenuItem);
+    const shiftTemplateRepository = AppDataSource.getRepository(ShiftTemplate);
 
     // Clear existing data by checking if tables exist and have data
     console.log('🗑️ Clearing existing data...');
@@ -27,11 +29,12 @@ export const seedDatabase = async () => {
       // Check if we need to clear data (if tables exist and have records)
       const menuItemCount = await menuItemRepository.count();
       const userCount = await userRepository.count();
+      const shiftTemplateCount = await shiftTemplateRepository.count();
       
-      if (menuItemCount > 0 || userCount > 0) {
+      if (menuItemCount > 0 || userCount > 0 || shiftTemplateCount > 0) {
         console.log('📊 Found existing data, clearing...');
         // Use CASCADE to handle foreign key dependencies in PostgreSQL
-        await queryRunner.query('TRUNCATE TABLE "menu_item", "user" RESTART IDENTITY CASCADE');
+        await queryRunner.query('TRUNCATE TABLE "menu_item", "user", "shift_template" RESTART IDENTITY CASCADE');
       } else {
         console.log('📋 No existing data found, proceeding with seeding...');
       }
@@ -446,8 +449,35 @@ export const seedDatabase = async () => {
 
     await menuItemRepository.save(allMenuItems);
 
+    // Create shift templates
+    console.log('⏰ Creating shift templates...');
+
+    const shiftTemplates = [
+      {
+        name: ShiftTiming.MORNING,
+        startTime: '06:00:00',
+        endTime: '14:00:00'
+      },
+      {
+        name: ShiftTiming.AFTERNOON,
+        startTime: '14:00:00',
+        endTime: '22:00:00'
+      },
+      {
+        name: ShiftTiming.EVENING,
+        startTime: '18:00:00',
+        endTime: '02:00:00'
+      }
+    ];
+
+    const allShiftTemplates = shiftTemplates.map(template => 
+      shiftTemplateRepository.create(template)
+    );
+
+    await shiftTemplateRepository.save(allShiftTemplates);
+
     console.log('✅ Database seeding completed successfully!');
-    console.log(`📊 Created ${allMenuItems.length} menu items and 10 users`);
+    console.log(`📊 Created ${allMenuItems.length} menu items, 10 users, and ${allShiftTemplates.length} shift templates`);
     
     return true;
   } catch (error) {

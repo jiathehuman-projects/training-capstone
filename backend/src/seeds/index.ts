@@ -5,15 +5,15 @@ import { AppDataSource } from '../data-source';
 
 const runSeed = async () => {
   try {
-    console.log('🌱 Starting database seed process...');
+    console.log('Starting database seed process...');
     
     // Seed the database
     await seedDatabase();
     
-    console.log('🎉 Seeding completed successfully!');
+    console.log('Seeding completed successfully!');
     process.exit(0);
   } catch (error) {
-    console.error('💥 Seeding failed:', error);
+    console.error('Seeding failed:', error);
     process.exit(1);
   } finally {
     // Close database connection
