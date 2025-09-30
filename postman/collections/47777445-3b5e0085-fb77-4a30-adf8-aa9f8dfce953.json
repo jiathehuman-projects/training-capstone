@@ -38,7 +38,7 @@
 			"response": []
 		},
 		{
-			"name": "Test endpoint",
+			"name": "Test",
 			"event": [
 				{
 					"listen": "test",
