@@ -195,3 +195,5 @@ cd backend && npm test
 Last Updated: September 29, 2025
 Project Status: Active Development
 Version: 0.1.0
+
+implement a frontend menu page under frontend/src/pages as a new menu.tsx file. This should link to the backend menu functionality, where the full route is localhost:5000/api/menu

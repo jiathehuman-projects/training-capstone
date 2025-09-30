@@ -6,6 +6,7 @@ import { AppDataSource } from './data-source';
 import authRouter from './routes/auth';
 import orderRouter from './routes/order';
 import { setupSwagger } from './config/swagger';
+import { seedDatabase } from './seeds';
 
 const app = express();
 
@@ -25,6 +26,16 @@ AppDataSource.initialize()
       console.log('✅ Migrations completed successfully!');
     } catch (error) {
       console.error('❌ Migration failed:', error);
+      process.exit(1);
+    }
+    
+    // Seed database with example data
+    console.log('🌱 Seeding database with example data...');
+    try {
+      await seedDatabase();
+      console.log('✅ Database seeding completed successfully!');
+    } catch (error) {
+      console.error('❌ Database seeding failed:', error);
       process.exit(1);
     }
     

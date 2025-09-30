@@ -1,60 +1,54 @@
 import { Link } from "@heroui/link";
-import { Snippet } from "@heroui/snippet";
-import { Code } from "@heroui/code";
 import { button as buttonStyles } from "@heroui/theme";
 
-import { siteConfig } from "@/config/site";
 import { title, subtitle } from "@/components/primitives";
-import { GithubIcon } from "@/components/icons";
 import DefaultLayout from "@/layouts/default";
 
 export default function IndexPage() {
   return (
     <DefaultLayout>
-      <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
-        <div className="inline-block max-w-lg text-center justify-center">
-          <span className={title()}>Make&nbsp;</span>
-          <span className={title({ color: "violet" })}>beautiful&nbsp;</span>
-          <br />
-          <span className={title()}>
-            websites regardless of your design experience.
-          </span>
-          <div className={subtitle({ class: "mt-4" })}>
-            Beautiful, fast and modern React UI library.
-          </div>
-        </div>
 
-        <div className="flex gap-3">
-          <Link
-            isExternal
-            className={buttonStyles({
-              color: "primary",
-              radius: "full",
-              variant: "shadow",
-            })}
-            href={siteConfig.links.docs}
-          >
-            Documentation
-          </Link>
-          <Link
-            isExternal
-            className={buttonStyles({ variant: "bordered", radius: "full" })}
-            href={siteConfig.links.github}
-          >
-            <GithubIcon size={20} />
-            GitHub
-          </Link>
-        </div>
-
-        <div className="mt-8">
-          <Snippet hideCopyButton hideSymbol variant="bordered">
-            <span>
-              Get started by editing{" "}
-              <Code color="primary">pages/index.tsx</Code>
+      {/* Hero Section */}
+      <section className="flex flex-col items-center justify-center overflow-hidden">
+      
+        <div className="relative z-10 text-center max-w-4xl mx-auto pt-30">
+          <h1 className={title({ size: "lg", class: "mb-6" })}>
+            <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
+              Dim Sumthing Wong
             </span>
-          </Snippet>
+          </h1>
+          <div className={subtitle({ class: "mb-8 text-gray-300" })}>
+            Your midnight Dim Sum joint • Authentic dim sum with a modern twist
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link
+              className={buttonStyles({
+                color: "primary",
+                variant: "shadow",
+                radius: "full",
+                size: "lg",
+                class: "bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold px-8 py-3"
+              })}
+              href="/order"
+            >
+              Order Now
+            </Link>
+            <Link
+              className={buttonStyles({
+                variant: "bordered",
+                radius: "full", 
+                size: "lg",
+                class: "border-purple-500 text-purple-400 hover:text-purple-300 px-8 py-3"
+              })}
+              href="#menu"
+            >
+              View Menu
+            </Link>
+          </div>
+
         </div>
-      </section>
+        
+        </section>
     </DefaultLayout>
   );
 }
