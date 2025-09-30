@@ -8,6 +8,42 @@
 	"item": [
 		{
 			"name": "Register",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "9eab26da-4d75-4ed8-b4c7-8c52df9070c4",
+						"exec": [
+							"// Check if the response status code is 200\r",
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"// Check if the response time is less than 200ms\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"// Check if the response body contains the expected message\r",
+							"pm.test(\"Response body contains the expected message\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.message).to.exist;\r",
+							"    pm.expect(response.message).to.be.a('string');\r",
+							"    pm.expect(response.message).to.equal(\"Test route working\");\r",
+							"});\r",
+							"\r",
+							"// Check if the Content-Type header is set to application/json\r",
+							"pm.test(\"Content-Type is application/json\", function () {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
 			"id": "47777445-ec402ffa-17b3-499d-96c7-b48046a234a9",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -98,6 +134,42 @@
 		},
 		{
 			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a350296e-0df5-415d-8b7e-5657f827e4f3",
+						"exec": [
+							"// Check if the response status code is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"// Check if the response time is less than 200ms\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"// Check if the response body contains the expected message\r",
+							"pm.test(\"Response body contains the expected message\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.message).to.exist;\r",
+							"    pm.expect(response.message).to.be.a('string');\r",
+							"    pm.expect(response.message).to.equal(\"Test route working\");\r",
+							"});\r",
+							"\r",
+							"// Check if the Content-Type header is set to application/json\r",
+							"pm.test(\"Content-Type is application/json\", function () {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
 			"id": "47777445-5855e386-f215-468c-9bb9-36bccfd00c84",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -122,6 +194,220 @@
 					"path": [
 						"auth",
 						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "MenuItem",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d8db950d-fac9-45cd-9b66-9bef1855bd10",
+						"exec": [
+							"// Check if the response status code is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"// Check if the response time is less than 200ms\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"// Check if the response body contains the expected message\r",
+							"pm.test(\"Response body contains the expected message\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.message).to.exist;\r",
+							"    pm.expect(response.message).to.be.a('string');\r",
+							"    pm.expect(response.message).to.equal(\"Test route working\");\r",
+							"});\r",
+							"\r",
+							"// Check if the Content-Type header is set to application/json\r",
+							"pm.test(\"Content-Type is application/json\", function () {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"id": "47777445-4bf2ba88-4bc7-4483-abe2-ab669231a4fa",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZXMiOlsiY3VzdG9tZXIiXSwiaWF0IjoxNzU5MTk5MDc5LCJleHAiOjE3NTkyODU0Nzl9.NVHw1MAWwjwJukyzX2bhJiw7gZDgCjCdtDEnQdw95Do",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/menu?category=mains&available=true&search=salmon",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"menu"
+					],
+					"query": [
+						{
+							"key": "category",
+							"value": "mains"
+						},
+						{
+							"key": "available",
+							"value": "true"
+						},
+						{
+							"key": "search",
+							"value": "salmon"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Menu",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1f3bd8ad-758e-439f-a184-22dd3aaa31ca",
+						"exec": [
+							"// Check if the response status code is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"// Check if the response time is less than 200ms\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"// Check if the response body contains the expected message\r",
+							"pm.test(\"Response body contains the expected message\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.message).to.exist;\r",
+							"    pm.expect(response.message).to.be.a('string');\r",
+							"    pm.expect(response.message).to.equal(\"Test route working\");\r",
+							"});\r",
+							"\r",
+							"// Check if the Content-Type header is set to application/json\r",
+							"pm.test(\"Content-Type is application/json\", function () {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"id": "47777445-f6ff9fe4-5502-4ffd-b68a-a6979cd709da",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/menu",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"menu"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Orders",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f082792a-f8f1-44b4-8f9b-8dbc72854ad4",
+						"exec": [
+							"// Check if the response time is less than 200ms\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"// Check if the response body contains the expected message\r",
+							"pm.test(\"Response body contains the expected message\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.message).to.exist;\r",
+							"    pm.expect(response.message).to.be.a('string');\r",
+							"    pm.expect(response.message).to.equal(\"Test route working\");\r",
+							"});\r",
+							"\r",
+							"// Check if the Content-Type header is set to application/json\r",
+							"pm.test(\"Content-Type is application/json\", function () {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"id": "47777445-26471a9e-f6a5-4937-b23c-1222ccc47956",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZXMiOlsiY3VzdG9tZXIiXSwiaWF0IjoxNzU5MTk5MDc5LCJleHAiOjE3NTkyODU0Nzl9.NVHw1MAWwjwJukyzX2bhJiw7gZDgCjCdtDEnQdw95Do",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"items\": [\r\n    {\r\n      \"menuItemId\": 1,\r\n      \"quantity\": 2,\r\n      \"customizations\": \"No onions, extra sauce\"\r\n    },\r\n    {\r\n      \"menuItemId\": 3,\r\n      \"quantity\": 1\r\n    }\r\n  ],\r\n  \"tableNumber\": 5\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						""
 					]
 				}
 			},
