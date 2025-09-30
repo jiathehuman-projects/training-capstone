@@ -1,116 +1,139 @@
-import React, { useState } from 'react';
+import { Button } from "@heroui/button";
+import { Link } from "@heroui/link";
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  IconButton,
-  Menu,
-  MenuItem,
-  useMediaQuery,
-  useTheme,
-  Box
-} from '@mui/material';
-import { Menu as MenuIcon } from '@mui/icons-material';
+  Navbar as HeroUINavbar,
+  NavbarBrand,
+  NavbarContent,
+  NavbarItem,
+} from "@heroui/navbar";
+import { button as buttonStyles } from "@heroui/theme";
+import { useNavigate } from "react-router-dom";
+import { addToast } from "@heroui/toast";
 
-interface NavbarProps {
-  onLoginClick?: () => void;
-  onRegisterClick?: () => void;
-}
+import { Logo } from "@/components/icons";
+import { useAuth } from "@/contexts/AuthContext";
 
-const Navbar: React.FC<NavbarProps> = ({ onLoginClick, onRegisterClick }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+export const Navbar = () => {
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLoginClick = () => {
-    handleMenuClose();
-    onLoginClick?.();
-  };
-
-  const handleRegisterClick = () => {
-    handleMenuClose();
-    onRegisterClick?.();
+  const handleLogout = () => {
+    logout();
+    addToast({
+      title: "Logged out successfully",
+      color: "success",
+    });
+    navigate("/");
   };
 
   return (
-    <AppBar>
-      <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Dim Sum Restaurant
-        </Typography>
-        
-        {isMobile ? (
+    <HeroUINavbar maxWidth="xl" position="sticky" className="bg-black backdrop-blur-sm border-b border-gray-700">
+      <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
+        <NavbarBrand className="gap-3 max-w-fit">
+          <Link
+            className="flex justify-start items-center gap-2 hover:opacity-80 transition-opacity"
+            href="/"
+          >
+            <Logo />
+            <p className="font-bold text-lg bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent">
+              DIM SUMTHING WONG
+            </p>
+          </Link>
+        </NavbarBrand>
+      </NavbarContent>
+
+      <NavbarContent justify="center" className="hidden sm:flex">
+        <NavbarItem>
+          <Link
+            href="/"
+            className="text-white hover:text-blue-400 transition-colors font-medium"
+          >
+            Home
+          </Link>
+        </NavbarItem>
+        <NavbarItem>
+          <Link
+            href="/menu"
+            className="text-white hover:text-blue-400 transition-colors font-medium"
+          >
+            Menu
+          </Link>
+        </NavbarItem>
+        <NavbarItem>
+          <Link
+            href="/about"
+            className="text-white hover:text-blue-400 transition-colors font-medium"
+          >
+            About
+          </Link>
+        </NavbarItem>
+      </NavbarContent>
+
+      <NavbarContent justify="end">
+        {isAuthenticated ? (
           <>
-            <IconButton
-              size="large"
-              edge="end"
-              color="inherit"
-              aria-label="menu"
-              onClick={handleMenuOpen}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-            >
-              <MenuItem onClick={handleLoginClick}>Login</MenuItem>
-              <MenuItem onClick={handleRegisterClick}>Register</MenuItem>
-            </Menu>
+            <NavbarItem className="hidden sm:flex">
+              <span className="text-white">Welcome, {user?.firstName || user?.username}</span>
+            </NavbarItem>
+            <NavbarItem>
+              <Button
+                onClick={handleLogout}
+                className={buttonStyles({
+                  variant: "bordered",
+                  radius: "full",
+                  size: "sm",
+                  class: "border-white text-white hover:border-blue-400 hover:text-blue-400"
+                })}
+              >
+                Log Out
+              </Button>
+            </NavbarItem>
           </>
         ) : (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button 
-              color="inherit" 
-              variant="outlined"
-              onClick={onLoginClick}
-              sx={{ 
-                borderColor: 'white',
-                '&:hover': {
-                  borderColor: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                }
-              }}
-            >
-              Login
-            </Button>
-            <Button 
-              color="inherit" 
-              variant="contained"
-              onClick={onRegisterClick}
-              sx={{ 
-                backgroundColor: 'white',
-                color: 'primary.main',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)'
-                }
-              }}
-            >
-              Register
-            </Button>
-          </Box>
+          <>
+            <NavbarItem>
+              <Link
+                href="/login"
+                className={buttonStyles({
+                  variant: "light",
+                  radius: "full",
+                  size: "sm",
+                  class: "text-white hover:text-blue-400"
+                })}
+              >
+                Login
+              </Link>
+            </NavbarItem>
+            <NavbarItem>
+              <Link
+                href="/register"
+                className={buttonStyles({
+                  color: "primary",
+                  variant: "flat",
+                  radius: "full",
+                  size: "sm",
+                  class: "bg-blue-600 hover:bg-blue-700 text-white"
+                })}
+              >
+                Sign Up
+              </Link>
+            </NavbarItem>
+          </>
         )}
-      </Toolbar>
-    </AppBar>
+        <NavbarItem>
+          <Link
+            href="/order"
+            className={buttonStyles({
+              variant: "bordered",
+              radius: "full", 
+              size: "sm",
+              class: "border-white text-white hover:border-blue-400 hover:text-blue-400 ml-2"
+            })}
+          >
+            Order Now
+          </Link>
+        </NavbarItem>
+      </NavbarContent>
+    </HeroUINavbar>
   );
 };
-
-export default Navbar;

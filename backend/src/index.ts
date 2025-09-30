@@ -10,6 +10,7 @@ import staffRouter from './routes/staff';
 import analyticsRouter from './routes/analytics';
 import { setupSwagger } from './config/swagger';
 import path from 'path';
+import { seedDatabase } from './seeds';
 
 const app = express();
 
@@ -45,6 +46,16 @@ AppDataSource.initialize()
       }
     }
     
+    // Seed database with example data
+    console.log('🌱 Seeding database with example data...');
+    try {
+      await seedDatabase();
+      console.log('✅ Database seeding completed successfully!');
+    } catch (error) {
+      console.error('❌ Database seeding failed:', error);
+      process.exit(1);
+    }
+    
     // Setup Swagger documentation
     setupSwagger(app);
     
@@ -57,6 +68,7 @@ AppDataSource.initialize()
     app.use("/api/menu", menuRouter);
     app.use("/api/staff", staffRouter);
     app.use("/api/analytics", analyticsRouter);
+    app.use("/orders", orderRouter);
     
     app.get('/health', (req, res) => {
       res.json({ 
