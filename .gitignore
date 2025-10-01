@@ -65,3 +65,6 @@ lerna-debug.log*
 # Project brief
 .pdf
 AGENTS.md 
+
+*.md
+!README.md
