@@ -634,6 +634,7 @@ export default function DashboardPage() {
           formatPrice={formatPrice}
           getStatusColor={getStatusColor}
           onCancelOrder={cancelOrder}
+          menuItems={menuItems}
         />
 
         {/* Order Confirmation Success Modal */}
@@ -1143,59 +1144,107 @@ function ConfirmationStep({
 }
 
 // Current Orders Section Component
-function CurrentOrdersSection({ orders, isLoading, formatPrice, getStatusColor, onCancelOrder }: any) {
+function CurrentOrdersSection({ orders, isLoading, formatPrice, getStatusColor, onCancelOrder, menuItems }: any) {
+  // Helper function to find menu item by ID
+  const findMenuItemById = (menuItemId: number) => {
+    return menuItems.find((item: MenuItem) => item.id === menuItemId);
+  };
+
+  // Helper function to get item display name
+  const getItemDisplayName = (item: any) => {
+    const menuItem = findMenuItemById(item.menuItemId);
+    const itemName = menuItem?.name || `Item #${item.menuItemId}`;
+    return `${itemName} x${item.quantity}`;
+  };
+
+  // Split orders into active and completed
+  const activeOrders = orders.filter((order: Order) => 
+    ['PLACED', 'READY', 'PENDING', 'IN_KITCHEN'].includes(order.status.toUpperCase())
+  ).sort((a: Order, b: Order) => new Date(b.placedAt || 0).getTime() - new Date(a.placedAt || 0).getTime());
+
+  const completedOrders = orders.filter((order: Order) => 
+    ['SERVED', 'CANCELLED', 'COMPLETED'].includes(order.status.toUpperCase())
+  ).sort((a: Order, b: Order) => new Date(b.placedAt || 0).getTime() - new Date(a.placedAt || 0).getTime());
+
+  const renderOrderCard = (order: Order, isCompleted: boolean = false) => (
+    <Card key={order.id} className={isCompleted ? "opacity-75 bg-gray-50" : ""}>
+      <CardBody>
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h3 className="font-semibold text-black">Order #{order.id}</h3>
+            <p className="text-gray-600 text-sm">Table {order.tableNumber}</p>
+          </div>
+          <div className="text-right">
+            <Chip color={getStatusColor(order.status)}>
+              {order.status.toLowerCase()}
+            </Chip>
+            <p className="text-black font-semibold mt-1">
+              {formatPrice(order.totalAmount)}
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-1 mb-3">
+          {order.items?.map((item: any, index: number) => (
+            <div key={index} className="text-sm">
+              <span className="text-gray-700">
+                {getItemDisplayName(item)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {order.status === 'DRAFT' && (
+          <Button
+            size="sm"
+            color="danger"
+            variant="light"
+            onPress={() => onCancelOrder(order.id)}
+          >
+            Cancel Order
+          </Button>
+        )}
+      </CardBody>
+    </Card>
+  );
+
   return (
     <div className="bg-white border border-gray-300 rounded-xl p-6 shadow-lg">
-      <h2 className="text-2xl font-bold text-black mb-4">Current Orders</h2>
+      <h2 className="text-2xl font-bold text-black mb-6">Current Orders</h2>
       
       {isLoading ? (
         <p className="text-black">Loading orders...</p>
-      ) : orders.length === 0 ? (
-        <p className="text-gray-600">No current orders</p>
       ) : (
-        <div className="space-y-4">
-          {orders.map((order: Order) => (
-            <Card key={order.id}>
-              <CardBody>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold text-black">Order #{order.id}</h3>
-                    <p className="text-gray-600 text-sm">Table {order.tableNumber}</p>
-                  </div>
-                  <div className="text-right">
-                    <Chip color={getStatusColor(order.status)}>
-                      {order.status}
-                    </Chip>
-                    <p className="text-black font-semibold mt-1">
-                      {formatPrice(order.totalAmount)}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="space-y-1 mb-3">
-                  {order.items?.map((item: any, index: number) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span className="text-gray-700">
-                        {item.menuItem?.name || `Item ${item.menuItemId}`} x{item.quantity}
-                      </span>
-                      <span className="text-gray-700">{formatPrice(item.totalPrice)}</span>
-                    </div>
-                  ))}
-                </div>
+        <div className="space-y-6">
+          {/* Active Orders Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-black mb-3 flex items-center">
+              <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+              Active Orders
+            </h3>
+            {activeOrders.length === 0 ? (
+              <p className="text-gray-600 text-sm">No active orders</p>
+            ) : (
+              <div className="space-y-3">
+                {activeOrders.map((order: Order) => renderOrderCard(order, false))}
+              </div>
+            )}
+          </div>
 
-                {order.status === 'DRAFT' && (
-                  <Button
-                    size="sm"
-                    color="danger"
-                    variant="light"
-                    onPress={() => onCancelOrder(order.id)}
-                  >
-                    Cancel Order
-                  </Button>
-                )}
-              </CardBody>
-            </Card>
-          ))}
+          {/* Completed Orders Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-black mb-3 flex items-center">
+              <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
+              Completed Orders
+            </h3>
+            {completedOrders.length === 0 ? (
+              <p className="text-gray-600 text-sm">No completed orders</p>
+            ) : (
+              <div className="space-y-3">
+                {completedOrders.map((order: Order) => renderOrderCard(order, true))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
