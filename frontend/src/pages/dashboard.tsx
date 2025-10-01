@@ -118,7 +118,7 @@ const calculateTotals = (cart: CartItem[], menuItems: MenuItem[]) => {
     if (!menuItem) return sum;
     
     // Use displayPrice which already includes promo calculation from backend
-    let price = menuItem.displayPrice;
+    let price = menuItem.displayPrice ?? 0;
     
     return sum + (price * item.quantity);
   }, 0);

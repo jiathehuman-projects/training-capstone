@@ -64,10 +64,11 @@ AppDataSource.initialize()
     
     // Only set up routes after database is connected
     app.use("/auth", authRouter);
-    app.use("/api", orderRouter);
+    // Mount specific routes before generic ones to avoid conflicts
     app.use("/api/menu", menuRouter);
     app.use("/api/staff", staffRouter);
     app.use("/api/analytics", analyticsRouter);
+    app.use("/api", orderRouter);
     app.use("/orders", orderRouter);
     
     app.get('/health', (req, res) => {

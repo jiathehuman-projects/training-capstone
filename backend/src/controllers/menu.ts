@@ -328,3 +328,56 @@ export const deleteMenuItem = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+export const getCategories = async (req: Request, res: Response) => {
+  try {
+    // Predefined dim sum categories
+    const predefinedCategories = [
+      'Dumplings (餃子)',
+      'Buns (包子)',
+      'Rice Rolls (腸粉)',
+      'Congee (粥)',
+      'Small Plates',
+      'Desserts',
+      'Chinese Tea',
+      'Specialty Drinks',
+      'Alcoholic Beverages'
+    ];
+
+    // Get existing categories from database
+    const existingCategories = await menuItemRepository
+      .createQueryBuilder('menuItem')
+      .select('DISTINCT menuItem.category', 'category')
+      .where('menuItem.category IS NOT NULL')
+      .andWhere('menuItem.category != \'\'')
+      .getRawMany();
+
+    const dbCategories = existingCategories.map(item => item.category);
+
+    // Merge predefined and database categories, removing duplicates
+    const allCategories = [...new Set([...predefinedCategories, ...dbCategories])];
+    
+    // Sort categories: predefined first, then alphabetical
+    const sortedCategories = allCategories.sort((a, b) => {
+      const aIsPredefined = predefinedCategories.includes(a);
+      const bIsPredefined = predefinedCategories.includes(b);
+      
+      if (aIsPredefined && !bIsPredefined) return -1;
+      if (!aIsPredefined && bIsPredefined) return 1;
+      if (aIsPredefined && bIsPredefined) {
+        return predefinedCategories.indexOf(a) - predefinedCategories.indexOf(b);
+      }
+      return a.localeCompare(b);
+    });
+
+    res.json({
+      categories: sortedCategories,
+      predefined: predefinedCategories,
+      fromDatabase: dbCategories
+    });
+
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

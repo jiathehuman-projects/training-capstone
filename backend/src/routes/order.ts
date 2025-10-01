@@ -24,7 +24,7 @@ const orderRouter = Router();
  *     description: Order management endpoints
  */
 
-orderRouter.get("/menu", getMenuItems);
+// Note: Menu endpoint for customers is at /orders/menu (see end of file)
 
 orderRouter.post("/order", authentication, validator.body(createOrderSchema), createOrder);
 

@@ -12,7 +12,8 @@ import {
   getMyAssignments,
   removeAssignment,
   declineApplication,
-  getWeeklySchedule
+  getWeeklySchedule,
+  getAllStaff
 } from "../controllers/staff";
 import {
   createTimeOffRequest,
@@ -43,6 +44,7 @@ staffRouter.get("/shift", authentication, getShifts);
 staffRouter.get("/assignment", authentication, getAssignments);
 
 // Manager endpoints - require manager role or higher
+staffRouter.get("/all", authentication, requireManagerOrAdmin, getAllStaff);
 staffRouter.post("/shift", authentication, requireManagerOrAdmin, createShift);
 staffRouter.post("/shift/:shiftId/assign", authentication, requireManagerOrAdmin, assignStaffToShift);
 staffRouter.delete("/assignment/:assignmentId", authentication, requireManagerOrAdmin, removeAssignment);

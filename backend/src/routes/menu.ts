@@ -7,6 +7,7 @@ import {
   getMenuItem, 
   updateMenuItem, 
   deleteMenuItem,
+  getCategories,
   upload
 } from "../controllers/menu";
 
@@ -30,6 +31,12 @@ menuRouter.post("/", authentication, requireManagerOrAdmin, upload.single('image
  * /api/menu:
  */
 menuRouter.get("/", authentication, requireManagerOrAdmin, getMenuItems);
+
+/**
+ * @swagger
+ * /api/menu/categories:
+ */
+menuRouter.get("/categories", authentication, requireManagerOrAdmin, getCategories);
 
 /**
  * @swagger

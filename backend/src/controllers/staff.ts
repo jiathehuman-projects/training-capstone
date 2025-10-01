@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Shift, ShiftTemplate, ShiftRequirement, ShiftApplication, ShiftAssignment, User, TimeOffRequest } from '../models';
 import { AppDataSource } from '../data-source';
 import { ShiftApplicationStatus, ShiftTiming, TimeOffStatus } from '../models/enums';
-import { MoreThan, LessThan, Between } from 'typeorm';
+import { MoreThan, LessThan, Between, Raw } from 'typeorm';
 
 const shiftRepository = AppDataSource.getRepository(Shift);
 const shiftTemplateRepository = AppDataSource.getRepository(ShiftTemplate);
@@ -984,5 +984,55 @@ export const getWeeklySchedule = async (req: AuthenticatedRequest, res: Response
       error: 'Failed to retrieve weekly schedule',
       message: error.message || 'An unknown error occurred'
     });
+  }
+};
+
+export const getAllStaff = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    // Get all users who have staff-related roles (not just customers)
+    const staff = await userRepository.find({
+      where: {
+        roles: Raw(alias => `${alias} && ARRAY['staff', 'manager', 'admin']::text[]`)
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        roles: true,
+        staffStatus: true,
+        workerRoles: true,
+        weeklyAvailability: true,
+        createdAt: true
+      },
+      order: {
+        lastName: 'ASC',
+        firstName: 'ASC'
+      }
+    });
+
+    const formattedStaff = staff.map(member => ({
+      id: member.id,
+      name: `${member.firstName} ${member.lastName}`,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      email: member.email,
+      phone: member.phone,
+      roles: member.roles,
+      staffStatus: member.staffStatus,
+      workerRoles: member.workerRoles || [],
+      weeklyAvailability: member.weeklyAvailability,
+      createdAt: member.createdAt
+    }));
+
+    res.json({ 
+      staff: formattedStaff,
+      total: formattedStaff.length 
+    });
+
+  } catch (error) {
+    console.error('Error fetching staff list:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };

@@ -90,13 +90,57 @@ export interface MenuItem {
   name: string;
   category: string;
   price: number;
-  displayPrice: number;
-  description: string;
+  displayPrice?: number;
+  description: string | null;
   photoUrl: string | null;
-  preparationTimeMin: number;
-  isAvailable: boolean;
-  hasPromo: boolean;
+  preparationTimeMin: number | null;
+  costOfGoods: number | null;
+  allergens: string[];
   promoPercent: number | null;
+  promoStartsAt: string | null;
+  promoEndsAt: string | null;
+  qtyOnHand: number | undefined; // Can be undefined at runtime despite backend defaults
+  reorderThreshold: number | undefined; // Can be undefined at runtime despite backend defaults
+  reorderStatus: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  // For order display compatibility
+  isAvailable?: boolean;
+  hasPromo?: boolean;
+}
+
+// Menu Management specific types
+export interface MenuItemsResponse {
+  menuItems: MenuItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+export interface CreateMenuItemRequest {
+  name: string;
+  category: string;
+  price: number;
+  description: string;
+  preparationTimeMin?: number;
+  costOfGoods?: number;
+  allergens?: string[];
+  qtyOnHand: number;
+  reorderThreshold?: number;
+}
+
+export interface UpdateMenuItemRequest extends Partial<CreateMenuItemRequest> {
+  isActive?: boolean;
+}
+
+export interface CategoriesResponse {
+  categories: string[];
+  predefined: string[];
+  fromDatabase: string[];
 }
 
 export interface CartItem {
@@ -218,6 +262,25 @@ export interface TimeOffRequest {
   decidedAt: Date | null;
 }
 
+export interface StaffMember {
+  id: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  roles: string[];
+  staffStatus: 'active' | 'unavailable' | 'inactive';
+  workerRoles: string[];
+  weeklyAvailability?: Record<string, any>;
+  createdAt: string;
+}
+
+export interface StaffResponse {
+  staff: StaffMember[];
+  total: number;
+}
+
 // Order and Menu API functions
 export const orderAPI = {
   getMenuItems: async (): Promise<MenuItem[]> => {
@@ -254,6 +317,52 @@ export const orderAPI = {
   getStaffOrders: async (): Promise<Order[]> => {
     const response = await api.get<{message: string, orders: Order[]}>('/orders/staff/orders');
     return response.data.orders;
+  },
+};
+
+// Menu Management API functions (for managers/admins)
+export const menuAPI = {
+  getMenuItems: async (params?: {
+    category?: string;
+    active?: boolean;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<MenuItemsResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.active !== undefined) queryParams.append('active', params.active.toString());
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    
+    const response = await api.get<MenuItemsResponse>(`/api/menu?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  getMenuItem: async (id: number): Promise<MenuItem> => {
+    const response = await api.get<{menuItem: MenuItem}>(`/api/menu/${id}`);
+    return response.data.menuItem;
+  },
+
+  createMenuItem: async (data: CreateMenuItemRequest): Promise<MenuItem> => {
+    const response = await api.post<{message: string, menuItem: MenuItem}>('/api/menu', data);
+    return response.data.menuItem;
+  },
+
+  updateMenuItem: async (id: number, data: UpdateMenuItemRequest): Promise<MenuItem> => {
+    const response = await api.put<{message: string, menuItem: MenuItem}>(`/api/menu/${id}`, data);
+    return response.data.menuItem;
+  },
+
+  deleteMenuItem: async (id: number): Promise<MenuItem> => {
+    const response = await api.delete<{message: string, menuItem: MenuItem}>(`/api/menu/${id}`);
+    return response.data.menuItem;
+  },
+
+  getCategories: async (): Promise<CategoriesResponse> => {
+    const response = await api.get<CategoriesResponse>('/api/menu/categories');
+    return response.data;
   },
 };
 
@@ -307,6 +416,11 @@ export const shiftAPI = {
 
   withdrawTimeOffRequest: async (requestId: number): Promise<void> => {
     await api.delete(`/api/staff/timeoff/${requestId}`);
+  },
+
+  getAllStaff: async (): Promise<StaffResponse> => {
+    const response = await api.get<StaffResponse>('/api/staff/all');
+    return response.data;
   },
 };
 
