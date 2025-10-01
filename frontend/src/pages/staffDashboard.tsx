@@ -186,11 +186,20 @@ export default function StaffDashboard() {
   return (
     <DefaultLayout>
       <div className="max-w-7xl mx-auto p-6">
-        <div className="mb-8">
-          <h1 className={title()}>Staff Dashboard</h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Manage restaurant orders and update their status
-          </p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className={title()}>Staff Dashboard</h1>
+            <p className="text-lg text-gray-600 mt-2">
+              Manage restaurant orders and update their status
+            </p>
+          </div>
+          <Button
+            variant="solid"
+            onClick={() => window.location.href = '/staff/shifts'}
+            className="bg-blue-600 text-white hover:bg-blue-700"
+          >
+            View Shifts
+          </Button>
         </div>
 
         {/* Filter Controls */}

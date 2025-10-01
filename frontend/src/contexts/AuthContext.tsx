@@ -17,21 +17,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check if user is already logged in on app start
     const token = tokenManager.getToken();
-    if (token) {
-      setIsAuthenticated(true);
-      // TODO: Optionally verify token with backend and get user data
-      // For now, we'll just set authenticated state
+    const savedUser = localStorage.getItem('user_data');
+    
+    if (token && savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Failed to parse saved user data:', error);
+        // Clear invalid data
+        tokenManager.removeToken();
+        localStorage.removeItem('user_data');
+      }
     }
   }, []);
 
   const login = (token: string, userData: User) => {
     tokenManager.setToken(token);
+    localStorage.setItem('user_data', JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
     tokenManager.removeToken();
+    localStorage.removeItem('user_data');
     setUser(null);
     setIsAuthenticated(false);
   };

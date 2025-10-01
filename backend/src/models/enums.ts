@@ -15,9 +15,9 @@ export enum ShiftApplicationStatus {
 }
 
 export enum ShiftTiming {
-  MORNING = 'morning',
-  AFTERNOON = 'afternoon', 
-  EVENING = 'evening'
+  EVENING = 'evening',
+  NIGHT = 'night',
+  EARLY_MORNING = 'early_morning'
 }
 
 export enum OrderStatus {

@@ -27,12 +27,22 @@ function getNext14Days(): string[] {
 export async function seedShiftTemplates() {
   const shiftTemplateRepository = AppDataSource.getRepository(ShiftTemplate);
   
-  // Since restaurant is open 10pm-10am, we'll create one overnight shift template
+  // Split 10pm-10am into 3 shifts: Evening (10pm-2am), Night (2am-6am), Early Morning (6am-10am)
   const templates = [
     {
-      name: ShiftTiming.EVENING, // Using evening as our overnight shift
+      name: ShiftTiming.EVENING,
       startTime: '22:00:00', // 10 PM
-      endTime: '10:00:00'   // 10 AM next day
+      endTime: '02:00:00'    // 2 AM next day
+    },
+    {
+      name: ShiftTiming.NIGHT,
+      startTime: '02:00:00', // 2 AM
+      endTime: '06:00:00'    // 6 AM
+    },
+    {
+      name: ShiftTiming.EARLY_MORNING,
+      startTime: '06:00:00', // 6 AM
+      endTime: '10:00:00'    // 10 AM
     }
   ];
   
@@ -44,11 +54,31 @@ export async function seedShifts() {
   const shiftRepository = AppDataSource.getRepository(Shift);
   const dates = getNext14Days();
   
-  const shifts = dates.map(date => ({
-    shiftDate: date,
-    templateId: 1, // Our single overnight template
-    notes: `Overnight shift for ${date}`
-  }));
+  const shifts: any[] = [];
+  
+  // Create shifts for all 3 templates for each date
+  dates.forEach(date => {
+    // Evening shift (10pm-2am)
+    shifts.push({
+      shiftDate: date,
+      templateId: 1, // Evening template
+      notes: `Evening shift for ${date}`
+    });
+    
+    // Night shift (2am-6am)
+    shifts.push({
+      shiftDate: date,
+      templateId: 2, // Night template
+      notes: `Night shift for ${date}`
+    });
+    
+    // Early morning shift (6am-10am)
+    shifts.push({
+      shiftDate: date,
+      templateId: 3, // Early morning template
+      notes: `Early morning shift for ${date}`
+    });
+  });
   
   await shiftRepository.save(shifts);
   console.log(`Created ${shifts.length} shifts`);
@@ -60,44 +90,45 @@ export async function seedShiftRequirements() {
   
   const requirements: any[] = [];
   
-  // Create requirements for each shift (2 servers, 1 cook as requested)
-  dates.forEach((date, index) => {
-    const shiftId = index + 1;
+  // Create requirements for each shift (3 shifts per day)
+  dates.forEach((date, dateIndex) => {
     const dayOfWeek = new Date(date).getDay();
+    const isWeekend = dayOfWeek === 5 || dayOfWeek === 6; // Friday or Saturday
     
-    // Vary requirements based on day of week
-    if (dayOfWeek === 5 || dayOfWeek === 6) { // Friday or Saturday - busy nights
-      requirements.push(
-        {
-          shiftId: shiftId,
-          roleName: 'server',
-          requiredCount: 3 // Extra server for busy nights
-        },
-        {
-          shiftId: shiftId,
-          roleName: 'cook',
-          requiredCount: 1
-        },
-        {
-          shiftId: shiftId,
-          roleName: 'bartender',
-          requiredCount: 1 // Need bartender for weekends
+    // For each date, we have 3 shifts (Evening, Night, Early Morning)
+    for (let shiftIndex = 0; shiftIndex < 3; shiftIndex++) {
+      const shiftId = (dateIndex * 3) + shiftIndex + 1;
+      const shiftType = shiftIndex === 0 ? 'evening' : shiftIndex === 1 ? 'night' : 'early_morning';
+      
+      if (shiftType === 'evening') {
+        // Evening shift (10pm-2am) - busiest, needs more staff
+        if (isWeekend) {
+          requirements.push(
+            { shiftId, roleName: 'server', requiredCount: 3 },
+            { shiftId, roleName: 'cook', requiredCount: 2 },
+            { shiftId, roleName: 'cleaner', requiredCount: 1 }
+          );
+        } else {
+          requirements.push(
+            { shiftId, roleName: 'server', requiredCount: 2 },
+            { shiftId, roleName: 'cook', requiredCount: 1 },
+            { shiftId, roleName: 'cleaner', requiredCount: 1 }
+          );
         }
-      );
-    } else {
-      // Regular weekdays: 2 servers, 1 cook
-      requirements.push(
-        {
-          shiftId: shiftId,
-          roleName: 'server',
-          requiredCount: 2
-        },
-        {
-          shiftId: shiftId,
-          roleName: 'cook',
-          requiredCount: 1
-        }
-      );
+      } else if (shiftType === 'night') {
+        // Night shift (2am-6am) - quieter, minimal staff
+        requirements.push(
+          { shiftId, roleName: 'server', requiredCount: 1 },
+          { shiftId, roleName: 'cook', requiredCount: 1 }
+        );
+      } else {
+        // Early morning shift (6am-10am) - moderate, prep for lunch
+        requirements.push(
+          { shiftId, roleName: 'server', requiredCount: 2 },
+          { shiftId, roleName: 'cook', requiredCount: 1 },
+          { shiftId, roleName: 'cleaner', requiredCount: 1 }
+        );
+      }
     }
   });
   

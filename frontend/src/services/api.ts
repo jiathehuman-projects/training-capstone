@@ -34,6 +34,9 @@ export interface User {
   lastName: string;
   roles: string[];
   staffStatus?: string;
+  workerRoles?: string[] | null;
+  phone?: string;
+  profileUrl?: string;
 }
 
 export interface AuthResponse {
@@ -142,6 +145,64 @@ export interface ConfirmOrderRequest {
   confirmed: boolean;
 }
 
+// Shift related types
+export interface ShiftTemplate {
+  id: number;
+  name: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface ShiftRequirement {
+  id: number;
+  roleName: string;
+  requiredCount: number;
+  assignedCount: number;
+}
+
+export interface ShiftApplication {
+  id: number;
+  staffId: number;
+  staffName: string;
+  desiredRequirementId: number | null;
+  status: 'applied' | 'approved' | 'rejected' | 'withdrawn';
+  appliedAt: Date;
+}
+
+export interface ShiftAssignment {
+  id: number;
+  staffId: number;
+  staffName: string;
+  roleName: string;
+  assignedAt: Date;
+}
+
+export interface Shift {
+  id: number;
+  shiftDate: string;
+  template: ShiftTemplate;
+  notes: string | null;
+  requirements: ShiftRequirement[];
+  applications: ShiftApplication[];
+  assignments: ShiftAssignment[];
+}
+
+export interface ApplyToShiftRequest {
+  desiredRequirementId?: number;
+}
+
+export interface TimeOffRequest {
+  id: number;
+  staffId: number;
+  staffName: string;
+  startDate: string;
+  endDate: string;
+  reason: string | null;
+  status: 'pending' | 'approved' | 'denied';
+  requestedAt: Date;
+  decidedAt: Date | null;
+}
+
 // Order and Menu API functions
 export const orderAPI = {
   getMenuItems: async (): Promise<MenuItem[]> => {
@@ -177,6 +238,54 @@ export const orderAPI = {
   getStaffOrders: async (): Promise<Order[]> => {
     const response = await api.get<{message: string, orders: Order[]}>('/orders/staff/orders');
     return response.data.orders;
+  },
+};
+
+// Shift and Staff API functions
+export const shiftAPI = {
+  getShifts: async (startDate?: string, endDate?: string): Promise<Shift[]> => {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    const response = await api.get<{message: string, shifts: Shift[]}>(`/api/staff/shift?${params.toString()}`);
+    return response.data.shifts;
+  },
+
+  applyToShift: async (shiftId: number, data: ApplyToShiftRequest): Promise<void> => {
+    await api.post(`/api/staff/shift/${shiftId}/apply`, data);
+  },
+
+  getApplications: async (): Promise<ShiftApplication[]> => {
+    const response = await api.get<{message: string, applications: ShiftApplication[]}>('/api/staff/application');
+    return response.data.applications;
+  },
+
+  withdrawApplication: async (applicationId: number): Promise<void> => {
+    await api.delete(`/api/staff/application/${applicationId}`);
+  },
+
+  getAssignments: async (): Promise<ShiftAssignment[]> => {
+    const response = await api.get<{message: string, assignments: ShiftAssignment[]}>('/api/staff/assignment');
+    return response.data.assignments;
+  },
+
+  getTimeOffRequests: async (status?: string, startDate?: string, endDate?: string): Promise<TimeOffRequest[]> => {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    const response = await api.get<{message: string, requests: TimeOffRequest[]}>(`/api/staff/timeoff?${params.toString()}`);
+    return response.data.requests;
+  },
+
+  createTimeOffRequest: async (startDate: string, endDate: string, reason?: string): Promise<void> => {
+    await api.post('/api/staff/timeoff', { startDate, endDate, reason });
+  },
+
+  withdrawTimeOffRequest: async (requestId: number): Promise<void> => {
+    await api.delete(`/api/staff/timeoff/${requestId}`);
   },
 };
 

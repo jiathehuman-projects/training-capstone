@@ -218,12 +218,12 @@ export const getShifts = async (req: AuthenticatedRequest, res: Response) => {
     const shiftsWithDetails = shifts.map(shift => ({
       id: shift.id,
       shiftDate: shift.shiftDate,
-      template: {
+      template: shift.template ? {
         id: shift.template.id,
         name: shift.template.name,
         startTime: shift.template.startTime,
         endTime: shift.template.endTime
-      },
+      } : null,
       notes: shift.notes,
       requirements: shift.requirements.map(req => ({
         id: req.id,
@@ -234,7 +234,7 @@ export const getShifts = async (req: AuthenticatedRequest, res: Response) => {
       applications: shift.applications.map(app => ({
         id: app.id,
         staffId: app.staffId,
-        staffName: `${app.staff.firstName} ${app.staff.lastName}`,
+        staffName: app.staff ? `${app.staff.firstName} ${app.staff.lastName}` : 'Unknown Staff',
         desiredRequirementId: app.desiredRequirementId,
         status: app.status,
         appliedAt: app.appliedAt
@@ -242,8 +242,8 @@ export const getShifts = async (req: AuthenticatedRequest, res: Response) => {
       assignments: shift.assignments.map(assignment => ({
         id: assignment.id,
         staffId: assignment.staffId,
-        staffName: `${assignment.staff.firstName} ${assignment.staff.lastName}`,
-        roleName: assignment.requirement.roleName,
+        staffName: assignment.staff ? `${assignment.staff.firstName} ${assignment.staff.lastName}` : 'Unknown Staff',
+        roleName: assignment.requirement ? assignment.requirement.roleName : 'Unknown Role',
         assignedAt: assignment.assignedAt
       }))
     }));
@@ -391,14 +391,14 @@ export const getApplications = async (req: AuthenticatedRequest, res: Response) 
     const applicationsWithDetails = applications.map(app => ({
       id: app.id,
       staffId: app.staffId,
-      staffName: `${app.staff.firstName} ${app.staff.lastName}`,
-      shift: {
+      staffName: app.staff ? `${app.staff.firstName} ${app.staff.lastName}` : 'Unknown Staff',
+      shift: app.shift ? {
         id: app.shift.id,
         shiftDate: app.shift.shiftDate,
-        template: app.shift.template.name,
-        startTime: app.shift.template.startTime,
-        endTime: app.shift.template.endTime
-      },
+        template: app.shift.template ? app.shift.template.name : 'Unknown Template',
+        startTime: app.shift.template ? app.shift.template.startTime : '00:00',
+        endTime: app.shift.template ? app.shift.template.endTime : '00:00'
+      } : null,
       desiredRole: app.desiredRequirement?.roleName || null,
       status: app.status,
       appliedAt: app.appliedAt
@@ -616,14 +616,14 @@ export const getAssignments = async (req: AuthenticatedRequest, res: Response) =
     const assignmentsWithDetails = assignments.map(assignment => ({
       id: assignment.id,
       staffId: assignment.staffId,
-      staffName: `${assignment.staff.firstName} ${assignment.staff.lastName}`,
-      shift: {
+      staffName: assignment.staff ? `${assignment.staff.firstName} ${assignment.staff.lastName}` : 'Unknown Staff',
+      shift: assignment.shift ? {
         id: assignment.shift.id,
         shiftDate: assignment.shift.shiftDate,
-        template: assignment.shift.template.name,
-        startTime: assignment.shift.template.startTime,
-        endTime: assignment.shift.template.endTime
-      },
+        template: assignment.shift.template ? assignment.shift.template.name : 'Unknown Template',
+        startTime: assignment.shift.template ? assignment.shift.template.startTime : '00:00',
+        endTime: assignment.shift.template ? assignment.shift.template.endTime : '00:00'
+      } : null,
       roleName: assignment.requirement.roleName,
       assignedAt: assignment.assignedAt
     }));
@@ -770,9 +770,9 @@ export const getWeeklySchedule = async (req: AuthenticatedRequest, res: Response
       if (!scheduleByDate[shift.shiftDate]) {
         scheduleByDate[shift.shiftDate] = {
           date: shift.shiftDate,
-          morning: null,
-          afternoon: null,
-          evening: null
+          evening: null,
+          night: null,
+          early_morning: null
         };
       }
 
@@ -796,12 +796,12 @@ export const getWeeklySchedule = async (req: AuthenticatedRequest, res: Response
       };
 
       const templateName = shift.template.name.toLowerCase();
-      if (templateName === ShiftTiming.MORNING) {
-        scheduleByDate[shift.shiftDate].morning = shiftData;
-      } else if (templateName === ShiftTiming.AFTERNOON) {
-        scheduleByDate[shift.shiftDate].afternoon = shiftData;
-      } else if (templateName === ShiftTiming.EVENING) {
+      if (templateName === ShiftTiming.EVENING) {
         scheduleByDate[shift.shiftDate].evening = shiftData;
+      } else if (templateName === ShiftTiming.NIGHT) {
+        scheduleByDate[shift.shiftDate].night = shiftData;
+      } else if (templateName === ShiftTiming.EARLY_MORNING) {
+        scheduleByDate[shift.shiftDate].early_morning = shiftData;
       }
     });
 

@@ -12,7 +12,7 @@ export class ShiftTemplate {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'enum', enum: ShiftTiming, default: ShiftTiming.MORNING })
+  @Column({ type: 'enum', enum: ShiftTiming, default: ShiftTiming.EVENING })
   name: string; 
 
   @Column({ name: 'start_time', type: 'time without time zone' })

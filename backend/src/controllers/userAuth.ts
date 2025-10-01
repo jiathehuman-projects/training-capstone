@@ -143,7 +143,10 @@ export const login = async (req: LoginRequest, res: Response) => {
         firstName: user.firstName,
         lastName: user.lastName,
         roles: user.roles,
-        staffStatus: user.staffStatus
+        staffStatus: user.staffStatus,
+        workerRoles: user.workerRoles,
+        phone: user.phone,
+        profileUrl: user.profileUrl
       }
     });
 
