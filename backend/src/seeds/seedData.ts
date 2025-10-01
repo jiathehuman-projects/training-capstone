@@ -454,19 +454,19 @@ export const seedDatabase = async () => {
 
     const shiftTemplates = [
       {
-        name: ShiftTiming.MORNING,
-        startTime: '06:00:00',
-        endTime: '14:00:00'
-      },
-      {
-        name: ShiftTiming.AFTERNOON,
-        startTime: '14:00:00',
-        endTime: '22:00:00'
-      },
-      {
         name: ShiftTiming.EVENING,
-        startTime: '18:00:00',
+        startTime: '22:00:00',
         endTime: '02:00:00'
+      },
+      {
+        name: ShiftTiming.MIDNIGHT,
+        startTime: '02:00:00',
+        endTime: '06:00:00'
+      },
+      {
+        name: ShiftTiming.EARLY_MORNING,
+        startTime: '06:00:00',
+        endTime: '10:00:00'
       }
     ];
 

@@ -3,7 +3,7 @@
  * into a specific role requirement within a shift.
  */
 import {
-  Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, CreateDateColumn, Index
+  Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, CreateDateColumn, Index, JoinColumn
 } from 'typeorm';
 import { Shift } from './Shift';
 import { User } from './User';
@@ -22,6 +22,7 @@ export class ShiftAssignment {
   shiftId: number;
 
   @ManyToOne(() => Shift, s => s.assignments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'shift_id' })
   shift: Shift;
 
   // the specific role slot (e.g., Oct-3 Morning, role=server)
@@ -29,12 +30,14 @@ export class ShiftAssignment {
   requirementId: number;
 
   @ManyToOne(() => ShiftRequirement, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'requirement_id' })
   requirement: ShiftRequirement;
 
   @Column({ name: 'staff_id', type: 'int' })
   staffId: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'staff_id' })
   staff: User;
 
   @CreateDateColumn({ name: 'assigned_at', type: 'timestamptz' })

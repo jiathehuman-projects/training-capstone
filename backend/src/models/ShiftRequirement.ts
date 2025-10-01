@@ -1,7 +1,7 @@
 /**
  * A role and required headcount within a shift (e.g., 2 cooks, 3 servers).
  */
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, Index, JoinColumn } from 'typeorm';
 import { Shift } from './Shift';
 
 @Entity({ name: 'shift_requirement' })
@@ -14,6 +14,7 @@ export class ShiftRequirement {
   shiftId: number;
 
   @ManyToOne(() => Shift, s => s.requirements, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'shift_id' })
   shift: Shift;
 
   @Index()

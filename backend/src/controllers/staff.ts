@@ -73,18 +73,90 @@ const isManagerUser = (currentUser: string | JwtPayload): boolean => {
   return false;
 };
 
-// Helper function to check for overlapping shifts
+// Helper function to check for time overlapping shifts
 const checkOverlappingShifts = async (staffId: number, shiftDate: string, templateId: number): Promise<boolean> => {
+  // Get the template for the shift we're trying to apply to
+  const newTemplate = await shiftTemplateRepository.findOne({
+    where: { id: templateId }
+  });
+
+  if (!newTemplate) {
+    return false; // If template doesn't exist, let other validation handle it
+  }
+
+  // Get all existing assignments and applications for this staff member on the same date
   const existingAssignments = await shiftAssignmentRepository.find({
     where: { staffId },
     relations: ['shift', 'shift.template']
   });
 
-  const conflictingAssignments = existingAssignments.filter(assignment => {
-    return assignment.shift.shiftDate === shiftDate;
+  const existingApplications = await shiftApplicationRepository.find({
+    where: { 
+      staffId,
+      status: ShiftApplicationStatus.APPROVED // Only check approved applications
+    },
+    relations: ['shift', 'shift.template']
   });
 
-  return conflictingAssignments.length > 0;
+  // Check assignments for time conflicts on the same date
+  const assignmentConflicts = existingAssignments.filter(assignment => {
+    if (!assignment.shift || !assignment.shift.template) return false;
+    if (assignment.shift.shiftDate !== shiftDate) return false;
+    
+    return hasTimeOverlap(
+      newTemplate.startTime, newTemplate.endTime,
+      assignment.shift.template.startTime, assignment.shift.template.endTime
+    );
+  });
+
+  // Check applications for time conflicts on the same date
+  const applicationConflicts = existingApplications.filter(application => {
+    if (!application.shift || !application.shift.template) return false;
+    if (application.shift.shiftDate !== shiftDate) return false;
+    
+    return hasTimeOverlap(
+      newTemplate.startTime, newTemplate.endTime,
+      application.shift.template.startTime, application.shift.template.endTime
+    );
+  });
+
+  return assignmentConflicts.length > 0 || applicationConflicts.length > 0;
+};
+
+// Helper function to check if two time ranges overlap
+const hasTimeOverlap = (start1: string, end1: string, start2: string, end2: string): boolean => {
+  // Convert times to minutes for easier comparison
+  const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const start1Min = timeToMinutes(start1);
+  let end1Min = timeToMinutes(end1);
+  const start2Min = timeToMinutes(start2);
+  let end2Min = timeToMinutes(end2);
+
+  // Handle overnight shifts (end time < start time)
+  if (end1Min < start1Min) {
+    end1Min += 24 * 60; // Add 24 hours
+  }
+  if (end2Min < start2Min) {
+    end2Min += 24 * 60; // Add 24 hours
+  }
+
+  // For overnight shifts, we need to check both the same day and next day scenarios
+  if (end1Min >= 24 * 60 || end2Min >= 24 * 60) {
+    // Complex overnight logic: check if ranges overlap
+    // Shift 1: start1 to end1 (potentially spanning midnight)
+    // Shift 2: start2 to end2 (potentially spanning midnight)
+    
+    // Simple overlap check: two time ranges overlap if
+    // start1 < end2 AND start2 < end1
+    return start1Min < end2Min && start2Min < end1Min;
+  }
+
+  // Regular same-day shifts
+  return start1Min < end2Min && start2Min < end1Min;
 };
 
 // Helper function to check if staff has approved time-off on a given date
@@ -331,6 +403,9 @@ export const applyToShift = async (req: ApplyToShiftRequest, res: Response) => {
       });
     }
 
+    // Note: We now allow multiple applications per user per date,
+    // but still prevent time overlaps and duplicate applications to the same shift
+
     // Validate desired requirement if provided
     if (desiredRequirementId) {
       const requirement = await shiftRequirementRepository.findOne({
@@ -368,9 +443,18 @@ export const applyToShift = async (req: ApplyToShiftRequest, res: Response) => {
   } catch (err) {
     const error = err as Error;
     console.error('Apply to shift error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Request details:', {
+      shiftId: parseInt(req.params.shiftId),
+      staffId: getUserIdFromToken(req.currentUser!),
+      desiredRequirementId: req.body.desiredRequirementId,
+      url: req.url,
+      method: req.method
+    });
     return res.status(500).json({
       error: 'Failed to apply to shift',
-      message: error.message || 'An unknown error occurred'
+      message: error.message || 'An unknown error occurred',
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
     });
   }
 };
@@ -602,9 +686,9 @@ export const assignStaffToShift = async (req: AssignStaffRequest, res: Response)
 
 export const getAssignments = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    if (!isStaffUser(req.currentUser!)) {
+    if (!isManagerUser(req.currentUser!)) {
       return res.status(403).json({
-        error: 'Access denied: Staff role required'
+        error: 'Access denied: Manager role required'
       });
     }
 
@@ -624,7 +708,7 @@ export const getAssignments = async (req: AuthenticatedRequest, res: Response) =
         startTime: assignment.shift.template ? assignment.shift.template.startTime : '00:00',
         endTime: assignment.shift.template ? assignment.shift.template.endTime : '00:00'
       } : null,
-      roleName: assignment.requirement.roleName,
+      roleName: assignment.requirement ? assignment.requirement.roleName : 'Unknown Role',
       assignedAt: assignment.assignedAt
     }));
 
@@ -638,6 +722,83 @@ export const getAssignments = async (req: AuthenticatedRequest, res: Response) =
     console.error('Get assignments error:', error);
     return res.status(500).json({
       error: 'Failed to retrieve assignments',
+      message: error.message || 'An unknown error occurred'
+    });
+  }
+};
+
+export const getMyAssignments = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!isStaffUser(req.currentUser!)) {
+      return res.status(403).json({
+        error: 'Access denied: Staff role required'
+      });
+    }
+
+    const userId = getUserIdFromToken(req.currentUser!);
+    
+    // Get current user to check their worker roles
+    const currentUser = await userRepository.findOne({ 
+      where: { id: userId } 
+    });
+
+    if (!currentUser) {
+      return res.status(404).json({
+        error: 'User not found'
+      });
+    }
+
+    // Get user's assignments from today onwards
+    const today = new Date().toISOString().split('T')[0];
+    
+    const assignments = await shiftAssignmentRepository.find({
+      where: { 
+        staffId: userId,
+      },
+      relations: ['shift', 'shift.template', 'staff', 'requirement'],
+      order: { assignedAt: 'DESC' }
+    });
+
+    // Filter assignments to only show future ones and ones matching user's worker roles
+    const filteredAssignments = assignments.filter(assignment => {
+      // Only show assignments from today onwards
+      if (assignment.shift && assignment.shift.shiftDate < today) {
+        return false;
+      }
+      
+      // Only show assignments that match user's worker roles (Option B)
+      if (currentUser.workerRoles && assignment.requirement) {
+        return currentUser.workerRoles.includes(assignment.requirement.roleName.toLowerCase());
+      }
+      
+      return true; // If no worker roles defined, show all assignments
+    });
+
+    const assignmentsWithDetails = filteredAssignments.map(assignment => ({
+      id: assignment.id,
+      staffId: assignment.staffId,
+      staffName: assignment.staff ? `${assignment.staff.firstName} ${assignment.staff.lastName}` : 'Unknown Staff',
+      shift: assignment.shift ? {
+        id: assignment.shift.id,
+        shiftDate: assignment.shift.shiftDate,
+        template: assignment.shift.template ? assignment.shift.template.name : 'Unknown Template',
+        startTime: assignment.shift.template ? assignment.shift.template.startTime : '00:00',
+        endTime: assignment.shift.template ? assignment.shift.template.endTime : '00:00'
+      } : null,
+      roleName: assignment.requirement ? assignment.requirement.roleName : 'Unknown Role',
+      assignedAt: assignment.assignedAt
+    }));
+
+    return res.status(200).json({
+      message: 'My assignments retrieved successfully',
+      assignments: assignmentsWithDetails
+    });
+
+  } catch (err) {
+    const error = err as Error;
+    console.error('Get my assignments error:', error);
+    return res.status(500).json({
+      error: 'Failed to retrieve my assignments',
       message: error.message || 'An unknown error occurred'
     });
   }
@@ -798,7 +959,7 @@ export const getWeeklySchedule = async (req: AuthenticatedRequest, res: Response
       const templateName = shift.template.name.toLowerCase();
       if (templateName === ShiftTiming.EVENING) {
         scheduleByDate[shift.shiftDate].evening = shiftData;
-      } else if (templateName === ShiftTiming.NIGHT) {
+      } else if (templateName === ShiftTiming.MIDNIGHT) {
         scheduleByDate[shift.shiftDate].night = shiftData;
       } else if (templateName === ShiftTiming.EARLY_MORNING) {
         scheduleByDate[shift.shiftDate].early_morning = shiftData;

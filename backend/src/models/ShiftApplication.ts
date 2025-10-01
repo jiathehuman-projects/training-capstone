@@ -1,8 +1,28 @@
 /**
- * A staff member’s request to work a given shift, optionally pointing to a role.
+ * A staff me  @Column({ name: 'shift_id', type: 'int' })
+  shiftId: number;
+
+  @ManyToOne(() => Shift, s => s.applications, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'shift_id' })
+  shift: Shift;
+
+  @Column({ name: 'staff_id', type: 'int' })
+  staffId: number;
+
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'staff_id' })
+  staff: User;
+
+  // optional: the role they'd like to work (links to that shift's role row)
+  @Column({ name: 'desired_requirement_id', type: 'int', nullable: true })
+  desiredRequirementId: number | null;
+
+  @ManyToOne(() => ShiftRequirement, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'desired_requirement_id' })
+  desiredRequirement: ShiftRequirement | null;work a given shift, optionally pointing to a role.
  */
 import {
-  Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, CreateDateColumn, Index
+  Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, CreateDateColumn, Index, JoinColumn
 } from 'typeorm';
 import { Shift } from './Shift';
 import { User } from './User';

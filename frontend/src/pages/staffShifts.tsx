@@ -126,8 +126,14 @@ export default function StaffShifts() {
   };
 
   const handleApplyToShift = async (shiftId: number, requirementId: number) => {
+    const optimisticKey = getOptimisticKey(shiftId, requirementId);
+    
     try {
+      // Optimistically update UI immediately
+      setOptimisticApplications(prev => new Set([...prev, optimisticKey]));
       setApplyingToShift(shiftId);
+      
+      // Make API call
       await shiftAPI.applyToShift(shiftId, { desiredRequirementId: requirementId });
       
       addToast({
@@ -136,13 +142,30 @@ export default function StaffShifts() {
         color: "success",
       });
       
-      // Refresh data
+      // Refresh data to get the actual application from backend
       await loadShiftData();
+      
     } catch (error: any) {
       console.error("Failed to apply to shift:", error);
+      console.error("Error details:", {
+        shiftId,
+        requirementId,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      // Revert optimistic update on error
+      setOptimisticApplications(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(optimisticKey);
+        return newSet;
+      });
+      
       addToast({
         title: "Error",
-        description: error.response?.data?.error || "Failed to apply to shift",
+        description: error.response?.data?.error || `Failed to apply to shift: ${error.message}`,
         color: "danger",
       });
     } finally {
@@ -150,27 +173,7 @@ export default function StaffShifts() {
     }
   };
 
-  const handleWithdrawApplication = async (applicationId: number) => {
-    try {
-      await shiftAPI.withdrawApplication(applicationId);
-      
-      addToast({
-        title: "Success",
-        description: "Application withdrawn successfully",
-        color: "success",
-      });
-      
-      // Refresh data
-      await loadShiftData();
-    } catch (error: any) {
-      console.error("Failed to withdraw application:", error);
-      addToast({
-        title: "Error",
-        description: error.response?.data?.error || "Failed to withdraw application",
-        color: "danger",
-      });
-    }
-  };
+
 
   // Helper functions
 
@@ -180,6 +183,28 @@ export default function StaffShifts() {
       date >= timeOff.startDate && 
       date <= timeOff.endDate
     );
+  };
+
+  // Track optimistic application state (for immediate UI feedback)
+  const [optimisticApplications, setOptimisticApplications] = useState<Set<string>>(new Set());
+  
+  // Helper to create optimistic application key
+  const getOptimisticKey = (shiftId: number, requirementId: number) => `${shiftId}-${requirementId}`;
+  
+  // Helper to calculate the actual assigned count (assignments + approved applications)
+  const getActualAssignedCount = (shift: Shift, requirementId: number): number => {
+    // Count actual assignments for this requirement
+    const assignmentCount = shift.assignments.filter(assignment => 
+      assignment.shift?.id === shift.id
+    ).length;
+    
+    // Count approved applications for this requirement  
+    const approvedApplicationCount = shift.applications.filter(app => 
+      app.desiredRequirementId === requirementId && 
+      (app.status === 'approved' || optimisticApplications.has(getOptimisticKey(shift.id, requirementId)))
+    ).length;
+    
+    return assignmentCount + approvedApplicationCount;
   };
 
   const canApplyToRole = (roleName: string) => {
@@ -429,7 +454,8 @@ export default function StaffShifts() {
                                 <h5 className="text-sm font-medium">Positions:</h5>
                                 {shift.requirements.map(requirement => {
                                   const canApply = canApplyToRole(requirement.roleName);
-                                  const isFullyStaffed = requirement.assignedCount >= requirement.requiredCount;
+                                  const actualAssignedCount = getActualAssignedCount(shift, requirement.id);
+                                  const isFullyStaffed = actualAssignedCount >= requirement.requiredCount;
                                   const hasApplied = userApplication?.desiredRequirementId === requirement.id;
                                   
                                   return (
@@ -444,7 +470,7 @@ export default function StaffShifts() {
                                           {requirement.roleName}
                                         </span>
                                         <span className="text-xs ml-2">
-                                          ({requirement.assignedCount}/{requirement.requiredCount})
+                                          ({actualAssignedCount}/{requirement.requiredCount})
                                         </span>
                                       </div>
                                       
@@ -452,15 +478,8 @@ export default function StaffShifts() {
                                         <span className="text-xs text-gray-500">Time Off</span>
                                       ) : userAssignment ? (
                                         <span className="text-xs text-blue-600">Assigned</span>
-                                      ) : hasApplied ? (
-                                        <Button
-                                          size="sm"
-                                          variant="bordered"
-                                          onClick={() => userApplication && handleWithdrawApplication(userApplication.id)}
-                                          className="text-xs"
-                                        >
-                                          Withdraw
-                                        </Button>
+                                      ) : hasApplied || optimisticApplications.has(getOptimisticKey(shift.id, requirement.id)) ? (
+                                        <span className="text-xs text-green-600">Applied</span>
                                       ) : !canApply ? (
                                         <span className="text-xs text-gray-500">Not Qualified</span>
                                       ) : isFullyStaffed ? (

@@ -9,6 +9,7 @@ import {
   withdrawApplication,
   assignStaffToShift,
   getAssignments,
+  getMyAssignments,
   removeAssignment,
   declineApplication,
   getWeeklySchedule
@@ -34,9 +35,12 @@ const staffRouter = Router();
 staffRouter.post("/shift/:shiftId/apply", authentication, applyToShift);
 staffRouter.get("/application", authentication, getApplications);
 staffRouter.delete("/application/:applicationId", authentication, withdrawApplication);
-staffRouter.get("/assignment", authentication, getAssignments);
+staffRouter.get("/my-assignments", authentication, getMyAssignments);
 staffRouter.get("/schedule/weekly", authentication, getWeeklySchedule);
 staffRouter.get("/shift", authentication, getShifts);
+
+// Manager endpoints - staff can still access all assignments
+staffRouter.get("/assignment", authentication, getAssignments);
 
 // Manager endpoints - require manager role or higher
 staffRouter.post("/shift", authentication, requireManagerOrAdmin, createShift);

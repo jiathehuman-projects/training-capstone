@@ -2,7 +2,7 @@
  * A scheduled shift for a specific date and template 
  * (e.g., Oct 3 Morning)
  */
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, Unique, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, Unique, CreateDateColumn, UpdateDateColumn, JoinColumn } from 'typeorm';
 import { ShiftTemplate } from './ShiftTemplate';
 import { ShiftRequirement } from './ShiftRequirement';
 import { ShiftApplication } from './ShiftApplication';
@@ -21,6 +21,7 @@ export class Shift {
   templateId: number;
 
   @ManyToOne(() => ShiftTemplate, st => st.shifts, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'template_id' })
   template: ShiftTemplate;
 
   @Column({ type: 'text', nullable: true })
