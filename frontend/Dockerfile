@@ -1,14 +1,18 @@
-FROM node:20-alpine as base
+FROM node:18 AS base
 WORKDIR /app
-COPY package*.json ./
+COPY package*.json package-lock.json ./
 
-FROM base as development
+FROM base AS development
+# Clear any existing node_modules and package-lock to avoid platform conflicts
+RUN rm -rf node_modules package-lock.json || true
+# Install fresh dependencies for Linux platform
 RUN npm install
+COPY . .
 EXPOSE 5173
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
 
-FROM base as production
-RUN npm install --production
+FROM base AS production
+RUN npm ci --production
 COPY . .
 RUN npm run build
 EXPOSE 5173

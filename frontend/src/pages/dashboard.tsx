@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import { getPrimaryRole } from '@/components/roleUtils';
 import { Button } from "@heroui/button";
 import { addToast } from "@heroui/toast";
 import { title, subtitle } from "@/components/primitives";
@@ -130,6 +132,7 @@ const calculateTotals = (cart: CartItem[], menuItems: MenuItem[]) => {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<OrderStep>('menu');
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -139,6 +142,15 @@ export default function DashboardPage() {
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
+
+  // Redirect non-customers away (staff -> /staff, manager/admin -> /manager)
+  useEffect(() => {
+    const primary = getPrimaryRole(user?.roles);
+    if (primary && primary !== 'customer') {
+      if (primary === 'staff') navigate('/staff', { replace: true });
+      else navigate('/manager', { replace: true });
+    }
+  }, [user, navigate]);
 
   // Load menu items on component mount
   useEffect(() => {
@@ -827,7 +839,7 @@ function MenuStep({ groupedMenuItems, isLoading, onAddToCart, formatPrice, getEf
                             size="sm"
                             onPress={() => handleDecreaseQuantity(item)}
                             isDisabled={getItemQuantityInCart(item.id, customizations[item.id] || '') === 0}
-                            className="min-w-unit-10 px-2"
+                            className="min-w-unit-10 px-2 text-xl"
                           >
                             -
                           </Button>
@@ -839,7 +851,7 @@ function MenuStep({ groupedMenuItems, isLoading, onAddToCart, formatPrice, getEf
                             variant="bordered"
                             size="sm"
                             onPress={() => handleIncreaseQuantity(item)}
-                            className="min-w-unit-10 px-2"
+                            className="min-w-unit-10 px-2 text-xl"
                           >
                             +
                           </Button>

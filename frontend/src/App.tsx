@@ -10,16 +10,33 @@ import RegisterPage from "./pages/register";
 import DashboardPage from "./pages/dashboard";
 import StaffDashboard from "./pages/staffDashboard";
 import StaffShifts from "./pages/staffShifts";
+import StaffLoginPage from './pages/staffLogin';
+import ManagerDashboard from './pages/managerDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <Routes>
       <Route element={<IndexPage />} path="/" />
       <Route element={<LoginPage/>} path="/login"/>
+      <Route element={<StaffLoginPage/>} path="/portal"/>
       <Route element={<RegisterPage/>} path="/register"/>
-      <Route element={<DashboardPage/>} path="/dashboard"/>
-      <Route element={<StaffDashboard/>} path="/staff"/>
-      <Route element={<StaffShifts/>} path="/staff/shifts"/>
+      <Route 
+        element={<ProtectedRoute allowedRoles={['customer']} element={<DashboardPage/>} />} 
+        path="/dashboard" 
+      />
+      <Route 
+        element={<ProtectedRoute allowedRoles={['staff','manager','admin']} element={<StaffDashboard/>} />} 
+        path="/staff" 
+      />
+      <Route 
+        element={<ProtectedRoute allowedRoles={['staff']} element={<StaffShifts/>} />} 
+        path="/staff/shifts" 
+      />
+      <Route 
+        element={<ProtectedRoute allowedRoles={['manager','admin']} element={<ManagerDashboard/>} />} 
+        path="/manager" 
+      />
       <Route element={<DocsPage />} path="/docs" />
       <Route element={<PricingPage />} path="/pricing" />
       <Route element={<BlogPage />} path="/blog" />

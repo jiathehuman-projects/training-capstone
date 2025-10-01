@@ -167,6 +167,14 @@ export interface ShiftApplication {
   desiredRequirementId: number | null;
   status: 'applied' | 'approved' | 'rejected' | 'withdrawn';
   appliedAt: Date;
+  shift?: {
+    id: number;
+    shiftDate: string;
+    template: string;
+    startTime: string;
+    endTime: string;
+  } | null;
+  desiredRole?: string | null;
 }
 
 export interface ShiftAssignment {
@@ -175,12 +183,19 @@ export interface ShiftAssignment {
   staffName: string;
   roleName: string;
   assignedAt: Date;
+  shift?: {
+    id: number;
+    shiftDate: string;
+    template: string;
+    startTime: string;
+    endTime: string;
+  } | null;
 }
 
 export interface Shift {
   id: number;
   shiftDate: string;
-  template: ShiftTemplate;
+  template: ShiftTemplate | null;
   notes: string | null;
   requirements: ShiftRequirement[];
   applications: ShiftApplication[];
@@ -211,7 +226,8 @@ export const orderAPI = {
   },
 
   createOrder: async (data: CreateOrderRequest): Promise<Order> => {
-    const response = await api.post<{message: string, order: Order}>('/orders', data);
+    // FIXED: Backend expects /orders/order (router.post('/order') mounted at /orders)
+    const response = await api.post<{message: string, order: Order}>('/orders/order', data);
     return response.data.order;
   },
 
@@ -267,6 +283,11 @@ export const shiftAPI = {
 
   getAssignments: async (): Promise<ShiftAssignment[]> => {
     const response = await api.get<{message: string, assignments: ShiftAssignment[]}>('/api/staff/assignment');
+    return response.data.assignments;
+  },
+
+  getMyAssignments: async (): Promise<ShiftAssignment[]> => {
+    const response = await api.get<{message: string, assignments: ShiftAssignment[]}>('/api/staff/my-assignments');
     return response.data.assignments;
   },
 

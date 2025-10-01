@@ -6,6 +6,7 @@ import { addToast } from "@heroui/toast";
 import { useNavigate } from "react-router-dom";
 import { authAPI, type LoginRequest } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { isCustomerOnly } from '@/components/roleUtils';
 
 import { title, subtitle } from "@/components/primitives";
 import DefaultLayout from "@/layouts/default";
@@ -78,30 +79,22 @@ export default function LoginPage() {
       console.log('Attempting login with:', { username: loginData.username });
       
       const response = await authAPI.login(loginData);
-      
-      console.log('Login successful:', response);
-      
-      // Store token and user data using auth context
+
+      // Portal mismatch: this /login page is ONLY for pure customers
+      if (!isCustomerOnly(response.user.roles)) {
+        setErrors({ username: 'Invalid username or password' });
+        return; // Do not persist token
+      }
+
       login(response.token, response.user);
-      
-      // Show success toast
+
       addToast({
         title: "Login successful!",
         description: "Welcome back.",
         color: "success",
       });
-      
-      // Redirect based on user role
-      const isStaffUser = response.user.roles && 
-        response.user.roles.length > 0 && 
-        !response.user.roles.includes('manager') && 
-        !response.user.roles.includes('admin');
-      
-      if (isStaffUser) {
-        navigate('/staff');
-      } else {
-        navigate('/dashboard');
-      }
+
+      navigate('/dashboard');
       
     } catch (error: any) {
       console.error('Login error details:', {
@@ -138,7 +131,7 @@ export default function LoginPage() {
           <div className="bg-white border border-gray-300 rounded-2xl p-8 shadow-2xl">
             <div className="text-center mb-8">
               <h1 className={title({ size: "md", class: "mb-4" })}>
-                <span className="bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent font-bold">
+                <span className="bg-gradient-to-r from-gray-500 to-gray-800 bg-clip-text text-transparent font-bold">
                   Welcome Back
                 </span>
               </h1>

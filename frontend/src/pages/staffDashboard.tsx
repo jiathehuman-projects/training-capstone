@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import { getPrimaryRole } from '@/components/roleUtils';
 import { Button } from "@heroui/button";
 import { addToast } from "@heroui/toast";
 import { title } from "@/components/primitives";
@@ -75,6 +77,7 @@ const getStatusDisplayName = (status: string): string => {
 
 export default function StaffDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,6 +86,16 @@ export default function StaffDashboard() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+
+  // Redirect managers/admins to /manager if they land here
+  useEffect(() => {
+    const primary = getPrimaryRole(user?.roles);
+    if (primary === 'manager' || primary === 'admin') {
+      navigate('/manager', { replace: true });
+    } else if (primary === 'customer') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   // Load staff orders on component mount and set up polling
   useEffect(() => {
@@ -188,14 +201,14 @@ export default function StaffDashboard() {
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className={title()}>Staff Dashboard</h1>
-            <p className="text-lg text-gray-600 mt-2">
+            <h1 className={`${title()} text-white`}>Staff Dashboard</h1>
+            <p className="text-lg text-gray-300 mt-2">
               Manage restaurant orders and update their status
             </p>
           </div>
           <Button
             variant="solid"
-            onClick={() => window.location.href = '/staff/shifts'}
+            onClick={() => navigate('/staff/shifts')}
             className="bg-blue-600 text-white hover:bg-blue-700"
           >
             View Shifts
@@ -271,7 +284,7 @@ export default function StaffDashboard() {
                 <div key={order.id} className="bg-white border border-gray-300 rounded-xl shadow-lg h-full flex flex-col">
                   <div className="p-4 flex-grow">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-lg font-semibold text-white">
                         Order #{order.id}
                       </h3>
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>

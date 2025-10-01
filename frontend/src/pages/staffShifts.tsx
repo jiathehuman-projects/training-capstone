@@ -6,7 +6,6 @@ import DefaultLayout from "@/layouts/default";
 import { useAuth } from "@/contexts/AuthContext";
 import { shiftAPI, type Shift, type ShiftApplication, type ShiftAssignment, type TimeOffRequest } from "@/services/api";
 
-type ViewMode = 'personal' | 'team';
 type WeekView = 'current' | 'next';
 
 const formatTime = (time: string): string => {
@@ -71,11 +70,10 @@ export default function StaffShifts() {
   const { user } = useAuth();
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [applications, setApplications] = useState<ShiftApplication[]>([]);
-  const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
+  const [myAssignments, setMyAssignments] = useState<ShiftAssignment[]>([]);
   const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('personal');
   const [weekView, setWeekView] = useState<WeekView>('current');
   const [applyingToShift, setApplyingToShift] = useState<number | null>(null);
 
@@ -102,16 +100,16 @@ export default function StaffShifts() {
       const endDate = new Date(new Date(startDate).getTime() + 13 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
       // Load all data in parallel
-      const [shiftsData, applicationsData, assignmentsData, timeOffData] = await Promise.all([
+      const [shiftsData, applicationsData, myAssignmentsData, timeOffData] = await Promise.all([
         shiftAPI.getShifts(startDate, endDate),
         shiftAPI.getApplications(),
-        shiftAPI.getAssignments(),
+        shiftAPI.getMyAssignments(),
         shiftAPI.getTimeOffRequests('approved', startDate, endDate) // Get approved time-off for the period
       ]);
 
       setShifts(shiftsData);
       setApplications(applicationsData);
-      setAssignments(assignmentsData);
+      setMyAssignments(myAssignmentsData);
       setTimeOffRequests(timeOffData);
     } catch (error: any) {
       console.error("Failed to load shift data:", error);
@@ -175,14 +173,6 @@ export default function StaffShifts() {
   };
 
   // Helper functions
-  const getUserApplication = (shiftId: number) => {
-    return applications.find(app => app.staffId === user?.id);
-  };
-
-  const getUserAssignment = (shiftId: number) => {
-    const shift = shifts.find(s => s.id === shiftId);
-    return shift?.assignments.find(assignment => assignment.staffId === user?.id);
-  };
 
   const isUserAvailable = (date: string) => {
     return !timeOffRequests.some(timeOff => 
@@ -205,30 +195,6 @@ export default function StaffShifts() {
       grouped[shift.shiftDate].push(shift);
     });
     return grouped;
-  };
-
-  // Filter assignments for current user and time period
-  const currentUserAssignments = assignments.filter(assignment => 
-    assignment.staffId === user?.id
-  );
-
-  // Get current user's assignments from shifts data
-  const getCurrentUserShiftAssignments = () => {
-    const userShiftAssignments: any[] = [];
-    shifts.forEach(shift => {
-      shift.assignments.forEach(assignment => {
-        if (assignment.staffId === user?.id) {
-          userShiftAssignments.push({
-            ...assignment,
-            shiftDate: shift.shiftDate,
-            startTime: shift.template.startTime,
-            endTime: shift.template.endTime,
-            shiftType: shift.template.name
-          });
-        }
-      });
-    });
-    return userShiftAssignments;
   };
 
   // Check if user is staff (has roles but not manager or admin)
@@ -259,16 +225,17 @@ export default function StaffShifts() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className={title()}>Shift Schedule</h1>
-            <p className="text-lg text-gray-600 mt-2">
+            <h1 className={`${title()} text-white`}>Shift Schedule</h1>
+            <p className="text-lg text-gray-300 mt-2">
               Apply for shifts and manage your schedule
             </p>
           </div>
           <Button
             variant="bordered"
-            onClick={() => window.history.back()}
+            className="text-white p-4"
+            onClick={() => window.location.href = '/dashboard'}
           >
-            ← Back to Dashboard
+            ← Dashboard
           </Button>
         </div>
 
@@ -283,7 +250,7 @@ export default function StaffShifts() {
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     weekView === 'current'
                       ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-300 hover:text-white'
                   }`}
                 >
                   This Week
@@ -293,34 +260,10 @@ export default function StaffShifts() {
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     weekView === 'next'
                       ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-300 hover:text-white'
                   }`}
                 >
                   Next Week
-                </button>
-              </div>
-
-              {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('personal')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'personal'
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  My View
-                </button>
-                <button
-                  onClick={() => setViewMode('team')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'team'
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Team View
                 </button>
               </div>
             </div>
@@ -348,41 +291,61 @@ export default function StaffShifts() {
           </div>
         )}
 
-        {/* My Current Assignments */}
-        {getCurrentUserShiftAssignments().length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">My Current Assignments</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {getCurrentUserShiftAssignments().map(assignment => (
-                <div key={assignment.id} className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-green-900">
-                      {formatDate(assignment.shiftDate)}
-                    </h3>
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                      Assigned
-                    </span>
+        {/* Two-Section Layout: Desktop side-by-side, Mobile stacked */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* My Current Assignments Section */}
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-semibold text-white mb-6">My Current Assignments</h2>
+            
+            {isLoading ? (
+              <div className="flex justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : myAssignments.length === 0 ? (
+              <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-8 text-center">
+                <h3 className="text-lg font-semibold text-gray-600 mb-2">No upcoming assignments</h3>
+                <p className="text-gray-600">
+                  You don't have any upcoming shift assignments.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {myAssignments.map(assignment => (
+                  <div key={assignment.id} className="bg-white border border-gray-300 rounded-xl shadow-lg p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-semibold text-black text-lg">
+                          {assignment.shift?.template.toUpperCase() || 'Unknown Shift'}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {formatDate(assignment.shift?.shiftDate || '')}
+                        </p>
+                      </div>
+                      <div className={`px-3 py-1 text-sm rounded-full ${getRoleColor(assignment.roleName)}`}>
+                        {assignment.roleName}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                      <div>
+                        <strong>Time:</strong> {formatTime(assignment.shift?.startTime || '00:00')} - {formatTime(assignment.shift?.endTime || '23:59')}
+                      </div>
+                      <div>
+                        <strong>Role:</strong> {assignment.roleName}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm text-green-700">
-                    <strong>Role:</strong> {assignment.roleName}
-                  </p>
-                  <p className="text-sm text-green-700">
-                    <strong>Shift:</strong> {assignment.shiftType.replace('_', ' ')}
-                  </p>
-                  <p className="text-sm text-green-700">
-                    <strong>Time:</strong> {formatTime(assignment.startTime)} - {formatTime(assignment.endTime)}
-                  </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Available Shifts Calendar */}
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Available Shifts - {weekView === 'current' ? 'This Week' : 'Next Week'}
-          </h2>
+          {/* Available Shifts Section */}
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-semibold text-white mb-6">
+              Available Shifts - {weekView === 'current' ? 'This Week' : 'Next Week'}
+            </h2>
           
           {isLoading && shifts.length === 0 ? (
             <div className="flex justify-center p-8">
@@ -398,16 +361,18 @@ export default function StaffShifts() {
           ) : (
             <div className="space-y-6">
               {sortedDates.map(date => {
-                const dayShifts = groupedShifts[date].sort((a, b) => 
-                  a.template.startTime.localeCompare(b.template.startTime)
-                );
+                const dayShifts = groupedShifts[date].sort((a, b) => {
+                  const aStartTime = a.template?.startTime || '00:00';
+                  const bStartTime = b.template?.startTime || '00:00';
+                  return aStartTime.localeCompare(bStartTime);
+                });
                 const isAvailable = isUserAvailable(date);
                 
                 return (
                   <div key={date} className="bg-white border border-gray-300 rounded-xl shadow-lg overflow-hidden">
                     <div className={`p-4 border-b ${!isAvailable ? 'bg-gray-100' : 'bg-gray-50'}`}>
                       <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-black">
                           {formatDate(date)}
                         </h3>
                         {!isAvailable && (
@@ -421,23 +386,27 @@ export default function StaffShifts() {
                     <div className="p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {dayShifts.map(shift => {
-                          const userApplication = getUserApplication(shift.id);
-                          const userAssignment = getUserAssignment(shift.id);
+                          const userApplication = applications.find(app => 
+                            app.shift?.id === shift.id && app.staffId === user?.id
+                          );
+                          const userAssignment = shift.assignments.find(assignment => 
+                            assignment.staffId === user?.id
+                          );
                           
                           return (
                             <div 
                               key={shift.id} 
-                              className={`border rounded-lg p-4 ${getShiftTypeColor(shift.template.name)} ${
+                              className={`border rounded-lg p-4 ${getShiftTypeColor(shift.template?.name || 'Unknown')} ${
                                 !isAvailable ? 'opacity-50' : ''
                               }`}
                             >
                               <div className="flex justify-between items-start mb-3">
                                 <div>
                                   <h4 className="font-semibold capitalize">
-                                    {shift.template.name.replace('_', ' ')}
+                                    {(shift.template?.name || 'Unknown').replace('_', ' ')}
                                   </h4>
                                   <p className="text-sm">
-                                    {formatTime(shift.template.startTime)} - {formatTime(shift.template.endTime)}
+                                    {formatTime(shift.template?.startTime || '00:00')} - {formatTime(shift.template?.endTime || '23:59')}
                                   </p>
                                 </div>
                                 {userApplication && (
@@ -512,36 +481,7 @@ export default function StaffShifts() {
                                 })}
                               </div>
                               
-                              {/* Show applications and assignments in team view */}
-                              {viewMode === 'team' && (
-                                <div className="mt-3 pt-3 border-t">
-                                  {shift.applications.length > 0 && (
-                                    <div className="mb-2">
-                                      <h6 className="text-xs font-medium text-gray-600 mb-1">Applications:</h6>
-                                      <div className="space-y-1">
-                                        {shift.applications.map(app => (
-                                          <div key={app.id} className="text-xs text-gray-600">
-                                            {app.staffName} ({app.status})
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                  
-                                  {shift.assignments.length > 0 && (
-                                    <div>
-                                      <h6 className="text-xs font-medium text-gray-600 mb-1">Assigned:</h6>
-                                      <div className="space-y-1">
-                                        {shift.assignments.map(assignment => (
-                                          <div key={assignment.id} className="text-xs text-gray-600">
-                                            {assignment.staffName} ({assignment.roleName})
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
+
                             </div>
                           );
                         })}
@@ -552,6 +492,8 @@ export default function StaffShifts() {
               })}
             </div>
           )}
+          </div>
+          
         </div>
       </div>
     </DefaultLayout>

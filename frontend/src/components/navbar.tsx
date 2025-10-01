@@ -12,6 +12,7 @@ import { addToast } from "@heroui/toast";
 
 import { Logo } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
+import { getPrimaryRole } from '@/components/roleUtils';
 
 export const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -77,14 +78,12 @@ export const Navbar = () => {
             </NavbarItem>
             <NavbarItem>
               <Link
-                href={
-                  user?.roles && 
-                  user.roles.length > 0 && 
-                  !user.roles.includes('manager') && 
-                  !user.roles.includes('admin') 
-                    ? '/staff' 
-                    : '/dashboard'
-                }
+                href={(function(){
+                  const primary = getPrimaryRole(user?.roles);
+                  if (primary === 'staff') return '/staff';
+                  if (primary === 'manager' || primary === 'admin') return '/manager';
+                  return '/dashboard';
+                })()}
                 className={buttonStyles({
                   variant: "flat",
                   radius: "full",

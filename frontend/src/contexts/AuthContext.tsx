@@ -3,6 +3,7 @@ import { tokenManager, type User } from '@/services/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  hydrated: boolean; // indicates initial localStorage load complete
   user: User | null;
   login: (token: string, userData: User) => void;
   logout: () => void;
@@ -13,12 +14,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    // Check if user is already logged in on app start
+    // Hydrate auth state from localStorage synchronously inside effect cycle
     const token = tokenManager.getToken();
     const savedUser = localStorage.getItem('user_data');
-    
     if (token && savedUser) {
       try {
         const userData = JSON.parse(savedUser);
@@ -26,11 +27,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsAuthenticated(true);
       } catch (error) {
         console.error('Failed to parse saved user data:', error);
-        // Clear invalid data
         tokenManager.removeToken();
         localStorage.removeItem('user_data');
       }
     }
+    setHydrated(true);
   }, []);
 
   const login = (token: string, userData: User) => {
@@ -48,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, hydrated, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
