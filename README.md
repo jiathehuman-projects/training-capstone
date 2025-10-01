@@ -46,10 +46,14 @@ docker compose up --build
 cd backend && npm test
 ```
 
+# Run all tests
+npm test
+
+# Run specific test files
+npm test -- __tests__/controllers/userAuth.test.ts
+npm test -- __tests__/routes/auth.test.ts
+
+# Run tests with coverage
+npm test -- --coverage
+
 ---
-
-implement a frontend menu page under frontend/src/pages as a new menu.tsx file. This should link to the backend menu functionality, where the full route is localhost:5000/api/menu
-
-Last Updated: September 29, 2025
-Project Status: Active Development
-Version: 0.1.0
