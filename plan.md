@@ -33,7 +33,7 @@ Setup Auth &     Core Features    Menu & Orders     Dashboard        Testing &
   - [ ] Protected routes
 
 ### Day 2 (30/9/25) - Core Features & User Roles
-- [ ] Role-based access control
+- [x] Role-based access control
 - [ ] Staff management
   - [ ] Staff CRUD operations
   - [ ] Role assignment
@@ -48,9 +48,9 @@ Setup Auth &     Core Features    Menu & Orders     Dashboard        Testing &
   - [ ] Availability tracking
 
 ### Day 3 (1/10/25) - Menu & Orders Management
-- [ ] Menu management system
+- [x] Menu management system
   - [ ] Category CRUD
-  - [ ] Item CRUD
+  - [x] Item CRUD
   - [ ] Pricing management
 - [ ] Order processing system
   - [ ] Cart functionality

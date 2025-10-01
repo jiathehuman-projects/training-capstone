@@ -20,7 +20,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'restaurant_db',
-  synchronize: process.env.NODE_ENV !== 'production', // Safe guard for production
+  synchronize: process.env.NODE_ENV !== 'production', 
   logging: process.env.NODE_ENV !== 'production',
   dropSchema: process.env.DROP_SCHEMA === 'true', // Add option to drop schema
   entities: [

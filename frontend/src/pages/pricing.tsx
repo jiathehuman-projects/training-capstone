@@ -1,0 +1,18 @@
+import { title } from "@/components/primitives";
+import DefaultLayout from "@/layouts/default";
+
+export default function DocsPage() {
+  return (
+    <DefaultLayout>
+      <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
+        <div className="inline-block max-w-lg text-center justify-center">
+          <h1 className={title()}>
+            <span className="bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent font-bold">
+              Pricing
+            </span>
+          </h1>
+        </div>
+      </section>
+    </DefaultLayout>
+  );
+}

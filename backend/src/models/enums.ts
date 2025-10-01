@@ -3,7 +3,7 @@
  */
 export enum StaffStatus {
   ACTIVE = 'active',
-  UNAVAILABLE = 'unavailable', // set when time-off approved
+  UNAVAILABLE = 'unavailable', 
   INACTIVE = 'inactive',
 }
 
