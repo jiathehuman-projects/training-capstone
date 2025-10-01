@@ -8,6 +8,7 @@ import AboutPage from "@/pages/about";
 import LoginPage from "./pages/login";
 import RegisterPage from "./pages/register";
 import DashboardPage from "./pages/dashboard";
+import StaffDashboard from "./pages/StaffDashboard";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route element={<LoginPage/>} path="/login"/>
       <Route element={<RegisterPage/>} path="/register"/>
       <Route element={<DashboardPage/>} path="/dashboard"/>
+      <Route element={<StaffDashboard/>} path="/staff"/>
       <Route element={<DocsPage />} path="/docs" />
       <Route element={<PricingPage />} path="/pricing" />
       <Route element={<BlogPage />} path="/blog" />

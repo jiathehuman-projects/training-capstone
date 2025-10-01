@@ -105,11 +105,14 @@ export interface CartItem {
 
 export interface OrderItem {
   id: number;
+  orderId: number;
   menuItemId: number;
+  nameSnapshot: string;
   quantity: number;
-  customizations: string | null;
   unitPrice: number;
-  totalPrice: number;
+  percentOff: number;
+  lineTotal: number;
+  customizations?: string | null;
   menuItem?: MenuItem;
 }
 
@@ -169,6 +172,11 @@ export const orderAPI = {
   updateOrderStatus: async (orderId: number, status: string): Promise<Order> => {
     const response = await api.put<Order>(`/orders/${orderId}/status`, { status });
     return response.data;
+  },
+
+  getStaffOrders: async (): Promise<Order[]> => {
+    const response = await api.get<{message: string, orders: Order[]}>('/orders/staff/orders');
+    return response.data.orders;
   },
 };
 

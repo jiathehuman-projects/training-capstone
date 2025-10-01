@@ -1,28 +1,33 @@
 import { Request, Response } from 'express';
-import multer from 'multer';
+// import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { MenuItem } from '../models';
 import { AppDataSource } from '../data-source';
 
+interface MulterRequest extends Request {
+  file?: any;
+}
+
 const menuItemRepository = AppDataSource.getRepository(MenuItem);
 
-// Configure multer for file uploads
+// Configure multer for file uploads (temporarily disabled)
+/*
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (req: any, file: any, cb: any) => {
     const uploadDir = path.join(__dirname, '../../uploads');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     cb(null, uploadDir);
   },
-  filename: (req, file, cb) => {
+  filename: (req: any, file: any, cb: any) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, 'menu-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (req: any, file: any, cb: any) => {
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
@@ -30,13 +35,13 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
     cb(new Error('Only JPEG, JPG and PNG files are allowed'));
   }
 };
+*/
 
-export const upload = multer({ 
-  storage: storage,
-  fileFilter: fileFilter
-});
+export const upload = {
+  single: (fieldName: string) => (req: any, res: any, next: any) => next()
+};
 
-export const createMenuItem = async (req: Request, res: Response) => {
+export const createMenuItem = async (req: MulterRequest, res: Response) => {
   try {
     const { name, category, price, description, preparationTimeMin, costOfGoods, allergens, qtyOnHand, reorderThreshold } = req.body;
 
@@ -190,7 +195,7 @@ export const getMenuItem = async (req: Request, res: Response) => {
   }
 };
 
-export const updateMenuItem = async (req: Request, res: Response) => {
+export const updateMenuItem = async (req: MulterRequest, res: Response) => {
   try {
     const { id } = req.params;
     const menuItemId = parseInt(id);

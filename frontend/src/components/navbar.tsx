@@ -76,6 +76,26 @@ export const Navbar = () => {
               <span className="text-white">Welcome, {user?.firstName || user?.username}</span>
             </NavbarItem>
             <NavbarItem>
+              <Link
+                href={
+                  user?.roles && 
+                  user.roles.length > 0 && 
+                  !user.roles.includes('manager') && 
+                  !user.roles.includes('admin') 
+                    ? '/staff' 
+                    : '/dashboard'
+                }
+                className={buttonStyles({
+                  variant: "flat",
+                  radius: "full",
+                  size: "sm",
+                  class: "bg-blue-600 hover:bg-blue-700 text-white mr-2"
+                })}
+              >
+                Dashboard
+              </Link>
+            </NavbarItem>
+            <NavbarItem>
               <Button
                 onClick={handleLogout}
                 className={buttonStyles({

@@ -8,7 +8,8 @@ import {
   getOrderStatus, 
   getCustomerOrders,
   updateOrderStatus,
-  getMenuItems
+  getMenuItems,
+  getAllOrdersForStaff
 } from "../controllers/order";
 import { createOrderSchema, confirmOrderSchema, updateOrderStatusSchema } from "../schemas/orderSchema";
 
@@ -34,6 +35,8 @@ orderRouter.put("/:orderId/confirm", authentication, validator.body(confirmOrder
 orderRouter.get("/:orderId/status", authentication, getOrderStatus);
 
 orderRouter.get("/customer/:customerId", authentication, getCustomerOrders);
+
+orderRouter.get("/staff/orders", authentication, getAllOrdersForStaff);
 
 orderRouter.put("/:orderId/status", authentication, validator.body(updateOrderStatusSchema), updateOrderStatus);
 

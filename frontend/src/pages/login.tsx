@@ -91,8 +91,17 @@ export default function LoginPage() {
         color: "success",
       });
       
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Redirect based on user role
+      const isStaffUser = response.user.roles && 
+        response.user.roles.length > 0 && 
+        !response.user.roles.includes('manager') && 
+        !response.user.roles.includes('admin');
+      
+      if (isStaffUser) {
+        navigate('/staff');
+      } else {
+        navigate('/dashboard');
+      }
       
     } catch (error: any) {
       console.error('Login error details:', {

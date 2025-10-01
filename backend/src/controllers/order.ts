@@ -755,3 +755,74 @@ export const updateOrderStatus = async (req: UpdateOrderStatusRequest, res: Resp
     });
   }
 };
+
+export const getAllOrdersForStaff = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    // Check if user has staff privileges
+    if (!isStaffUser(req.currentUser!)) {
+      return res.status(403).json({
+        error: 'Access denied - staff privileges required'
+      });
+    }
+
+    const { limit = 50, offset = 0 } = req.query;
+
+    // Get all orders excluding DRAFT, CLOSED, and CANCELLED
+    const orders = await orderRepository.find({
+      where: [
+        { status: OrderStatus.PLACED },
+        { status: OrderStatus.IN_KITCHEN },
+        { status: OrderStatus.READY },
+        { status: OrderStatus.SERVED }
+      ],
+      relations: ['items'],
+      order: { placedAt: 'ASC' }, // FIFO - oldest first
+      take: Number(limit),
+      skip: Number(offset)
+    });
+
+    const staffOrders = orders.map(order => ({
+      id: order.id,
+      customerId: order.customerId,
+      tableNumber: order.tableNumber,
+      status: order.status,
+      subtotalAmount: order.subtotalAmount,
+      taxAmount: order.taxAmount,
+      serviceChargeAmount: order.serviceChargeAmount,
+      tipAmount: order.tipAmount,
+      totalAmount: order.totalAmount,
+      paymentMode: order.paymentMode,
+      paymentStatus: order.paymentStatus,
+      placedAt: order.placedAt,
+      closedAt: order.closedAt,
+      items: order.items.map(item => ({
+        id: item.id,
+        orderId: item.orderId,
+        menuItemId: item.menuItemId,
+        nameSnapshot: item.nameSnapshot,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        percentOff: item.percentOff,
+        lineTotal: item.lineTotal
+      }))
+    }));
+
+    return res.status(200).json({
+      message: 'Staff orders retrieved successfully',
+      orders: staffOrders,
+      pagination: {
+        limit: Number(limit),
+        offset: Number(offset),
+        total: orders.length
+      }
+    });
+
+  } catch (err) {
+    const error = err as Error;
+    console.error('Get staff orders error:', error);
+    return res.status(500).json({
+      error: 'Failed to retrieve staff orders',
+      message: error.message || 'An unknown error occurred'
+    });
+  }
+};
