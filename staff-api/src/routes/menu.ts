@@ -3,7 +3,8 @@ import { authentication } from '../middleware/authmiddleware';
 import { requireManagerOrAdmin } from '../middleware/roleMiddleware';
 import { 
   createMenuItem, 
-  getMenuItems, 
+  getMenuItems,
+  getPublicMenuItems, 
   getMenuItem, 
   updateMenuItem, 
   deleteMenuItem,
@@ -176,6 +177,39 @@ menuRouter.post("/", authentication, requireManagerOrAdmin, upload.single('image
  *       403:
  *         description: Forbidden
  */
+/**
+ * @swagger
+ * /api/staff/menu/public:
+ *   get:
+ *     summary: Get active menu items (Public access for customers)
+ *     tags: [Public Menu]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of active menu items
+ *       401:
+ *         description: Unauthorized
+ */
+menuRouter.get("/public", getPublicMenuItems);
+
 menuRouter.get("/", authentication, requireManagerOrAdmin, getMenuItems);
 
 /**

@@ -48,6 +48,8 @@ interface MenuItemFormData {
   promoPercent: string;
   promoStartsAt: string;
   promoEndsAt: string;
+  // Image field
+  image: File | null;
 }
 
 const initialFormData: MenuItemFormData = {
@@ -65,6 +67,8 @@ const initialFormData: MenuItemFormData = {
   promoPercent: '',
   promoStartsAt: '',
   promoEndsAt: '',
+  // Image field
+  image: null,
 };
 
 export default function ManagerMenu() {
@@ -205,46 +209,123 @@ export default function ManagerMenu() {
     try {
       setSubmitting(true);
 
-      const requestData: CreateMenuItemRequest | UpdateMenuItemRequest = {
-        name: formData.name.trim(),
-        category: formData.category.trim(),
-        price: parseFloat(formData.price),
-        description: formData.description.trim(),
-        qtyOnHand: parseInt(formData.qtyOnHand),
-        allergens: formData.allergens,
-        ...(formData.preparationTimeMin && { 
-          preparationTimeMin: parseInt(formData.preparationTimeMin) 
-        }),
-        ...(formData.costOfGoods && { 
-          costOfGoods: parseFloat(formData.costOfGoods) 
-        }),
-        ...(formData.reorderThreshold && { 
-          reorderThreshold: parseInt(formData.reorderThreshold) 
-        }),
-        // Promotion fields
-        ...(formData.promoPercent && { 
-          promoPercent: parseFloat(formData.promoPercent) 
-        }),
-        ...(formData.promoStartsAt && { 
-          promoStartsAt: formData.promoStartsAt 
-        }),
-        ...(formData.promoEndsAt && { 
-          promoEndsAt: formData.promoEndsAt 
-        }),
-      };
-
       if (isEditing && editingItem) {
-        await staffMenuAPI.updateMenuItem(editingItem.id, {
-          ...requestData,
-          isActive: formData.isActive,
-        });
+        // Handle update with image or without
+        let updateData: UpdateMenuItemRequest | FormData;
+        
+        if (formData.image) {
+          // Use FormData for file upload
+          const formDataObj = new FormData();
+          formDataObj.append('name', formData.name.trim());
+          formDataObj.append('category', formData.category.trim());
+          formDataObj.append('price', formData.price);
+          formDataObj.append('description', formData.description.trim());
+          formDataObj.append('qtyOnHand', formData.qtyOnHand);
+          formDataObj.append('allergens', JSON.stringify(formData.allergens));
+          formDataObj.append('image', formData.image);
+          formDataObj.append('isActive', String(formData.isActive));
+          
+          if (formData.preparationTimeMin) formDataObj.append('preparationTimeMin', formData.preparationTimeMin);
+          if (formData.costOfGoods) formDataObj.append('costOfGoods', formData.costOfGoods);
+          if (formData.reorderThreshold) formDataObj.append('reorderThreshold', formData.reorderThreshold);
+          if (formData.promoPercent) formDataObj.append('promoPercent', formData.promoPercent);
+          if (formData.promoStartsAt) formDataObj.append('promoStartsAt', formData.promoStartsAt);
+          if (formData.promoEndsAt) formDataObj.append('promoEndsAt', formData.promoEndsAt);
+          
+          updateData = formDataObj;
+        } else {
+          // Use JSON for regular data without image
+          updateData = {
+            name: formData.name.trim(),
+            category: formData.category.trim(),
+            price: parseFloat(formData.price),
+            description: formData.description.trim(),
+            qtyOnHand: parseInt(formData.qtyOnHand),
+            allergens: formData.allergens,
+            isActive: formData.isActive,
+            ...(formData.preparationTimeMin && { 
+              preparationTimeMin: parseInt(formData.preparationTimeMin) 
+            }),
+            ...(formData.costOfGoods && { 
+              costOfGoods: parseFloat(formData.costOfGoods) 
+            }),
+            ...(formData.reorderThreshold && { 
+              reorderThreshold: parseInt(formData.reorderThreshold) 
+            }),
+            // Promotion fields
+            ...(formData.promoPercent && { 
+              promoPercent: parseFloat(formData.promoPercent) 
+            }),
+            ...(formData.promoStartsAt && { 
+              promoStartsAt: formData.promoStartsAt 
+            }),
+            ...(formData.promoEndsAt && { 
+              promoEndsAt: formData.promoEndsAt 
+            }),
+          };
+        }
+
+        await staffMenuAPI.updateMenuItem(editingItem.id, updateData);
         addToast({
           title: 'Success',
           description: 'Menu item updated successfully',
           color: 'success',
         });
       } else {
-        await staffMenuAPI.createMenuItem(requestData as CreateMenuItemRequest);
+        // Handle create with image or without
+        let createData: CreateMenuItemRequest | FormData;
+        
+        if (formData.image) {
+          // Use FormData for file upload
+          const formDataObj = new FormData();
+          formDataObj.append('name', formData.name.trim());
+          formDataObj.append('category', formData.category.trim());
+          formDataObj.append('price', formData.price);
+          formDataObj.append('description', formData.description.trim());
+          formDataObj.append('qtyOnHand', formData.qtyOnHand);
+          formDataObj.append('allergens', JSON.stringify(formData.allergens));
+          formDataObj.append('image', formData.image);
+          
+          if (formData.preparationTimeMin) formDataObj.append('preparationTimeMin', formData.preparationTimeMin);
+          if (formData.costOfGoods) formDataObj.append('costOfGoods', formData.costOfGoods);
+          if (formData.reorderThreshold) formDataObj.append('reorderThreshold', formData.reorderThreshold);
+          if (formData.promoPercent) formDataObj.append('promoPercent', formData.promoPercent);
+          if (formData.promoStartsAt) formDataObj.append('promoStartsAt', formData.promoStartsAt);
+          if (formData.promoEndsAt) formDataObj.append('promoEndsAt', formData.promoEndsAt);
+          
+          createData = formDataObj;
+        } else {
+          // Use JSON for regular data without image
+          createData = {
+            name: formData.name.trim(),
+            category: formData.category.trim(),
+            price: parseFloat(formData.price),
+            description: formData.description.trim(),
+            qtyOnHand: parseInt(formData.qtyOnHand),
+            allergens: formData.allergens,
+            ...(formData.preparationTimeMin && { 
+              preparationTimeMin: parseInt(formData.preparationTimeMin) 
+            }),
+            ...(formData.costOfGoods && { 
+              costOfGoods: parseFloat(formData.costOfGoods) 
+            }),
+            ...(formData.reorderThreshold && { 
+              reorderThreshold: parseInt(formData.reorderThreshold) 
+            }),
+            // Promotion fields
+            ...(formData.promoPercent && { 
+              promoPercent: parseFloat(formData.promoPercent) 
+            }),
+            ...(formData.promoStartsAt && { 
+              promoStartsAt: formData.promoStartsAt 
+            }),
+            ...(formData.promoEndsAt && { 
+              promoEndsAt: formData.promoEndsAt 
+            }),
+          };
+        }
+
+        await staffMenuAPI.createMenuItem(createData);
         addToast({
           title: 'Success', 
           description: 'Menu item created successfully',
@@ -285,6 +366,8 @@ export default function ManagerMenu() {
       promoPercent: item.promoPercent?.toString() || '',
       promoStartsAt: item.promoStartsAt ? new Date(item.promoStartsAt).toISOString().slice(0, 16) : '',
       promoEndsAt: item.promoEndsAt ? new Date(item.promoEndsAt).toISOString().slice(0, 16) : '',
+      // Image field (reset to null, user can upload new one)
+      image: null,
     });
     onOpen();
   };
@@ -708,6 +791,30 @@ export default function ManagerMenu() {
                           </p>
                         </div>
                       )}
+                      
+                      {/* Image Upload Field */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Menu Item Image
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            setFormData({ ...formData, image: file });
+                          }}
+                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                        />
+                        {formData.image && (
+                          <p className="text-xs text-gray-600">
+                            Selected: {formData.image.name}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                          Supported formats: JPG, PNG, GIF, WebP (Max 5MB)
+                        </p>
+                      </div>
                     </div>
 
                     {isEditing && (

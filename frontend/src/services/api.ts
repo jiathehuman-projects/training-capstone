@@ -440,18 +440,49 @@ export const staffMenuAPI = {
     return response.data;
   },
 
+  getPublicMenuItems: async (params?: {
+    category?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<MenuItemsResponse> => {
+    const queryParams = new URLSearchParams();
+    // Always filter to active items for public access
+    queryParams.append('isActive', 'true');
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = queryParams.toString();
+    const url = `/api/staff/menu/public${queryString ? `?${queryString}` : ''}`;
+    // Create a new axios instance without authentication for public access
+    const publicApi = axios.create({
+      baseURL: api.defaults.baseURL,
+      timeout: api.defaults.timeout,
+    });
+    const response = await publicApi.get<MenuItemsResponse>(url);
+    return response.data;
+  },
+
   getMenuItem: async (id: number): Promise<MenuItem> => {
     const response = await api.get<{message: string, menuItem: MenuItem}>(`/api/staff/menu/${id}`);
     return response.data.menuItem;
   },
 
-  createMenuItem: async (data: CreateMenuItemRequest): Promise<MenuItem> => {
-    const response = await api.post<{message: string, menuItem: MenuItem}>('/api/staff/menu', data);
+  createMenuItem: async (data: CreateMenuItemRequest | FormData): Promise<MenuItem> => {
+    const response = await api.post<{message: string, menuItem: MenuItem}>('/api/staff/menu', data, {
+      headers: data instanceof FormData ? {} : { 'Content-Type': 'application/json' }
+    });
     return response.data.menuItem;
   },
 
-  updateMenuItem: async (id: number, data: UpdateMenuItemRequest): Promise<MenuItem> => {
-    const response = await api.put<{message: string, menuItem: MenuItem}>(`/api/staff/menu/${id}`, data);
+  updateMenuItem: async (id: number, data: UpdateMenuItemRequest | FormData): Promise<MenuItem> => {
+    const response = await api.put<{message: string, menuItem: MenuItem}>(`/api/staff/menu/${id}`, data, {
+      headers: data instanceof FormData ? {} : { 'Content-Type': 'application/json' }
+    });
     return response.data.menuItem;
   },
 

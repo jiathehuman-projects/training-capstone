@@ -12,8 +12,9 @@ interface MulterRequest extends Request {
 
 const menuItemRepository = AppDataSource.getRepository(MenuItem);
 
-// Configure multer for file uploads (temporarily disabled)
-/*
+// Configure multer for file uploads
+const multer = require('multer');
+
 const storage = multer.diskStorage({
   destination: (req: any, file: any, cb: any) => {
     const uploadDir = path.join(__dirname, '../../uploads');
@@ -24,17 +25,24 @@ const storage = multer.diskStorage({
   },
   filename: (req: any, file: any, cb: any) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'menu-' + uniqueSuffix + path.extname(file.originalname));
+    const itemId = req.params.id || 'new';
+    cb(null, `item-${itemId}-${uniqueSuffix}${path.extname(file.originalname)}`);
   }
 });
 
-export const upload = multer({ storage: storage });
-*/
-
-// Placeholder upload middleware
-export const upload = {
-  single: (fieldName: string) => (req: any, res: any, next: any) => next()
+// File filter to allow only images
+const fileFilter = (req: any, file: any, cb: any) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
 };
+
+export const upload = multer({ 
+  storage: storage,
+  fileFilter: fileFilter
+});
 
 export const createMenuItem = async (req: MulterRequest, res: Response) => {
   try {
@@ -62,7 +70,8 @@ export const createMenuItem = async (req: MulterRequest, res: Response) => {
     }
 
     // Validate price
-    if (typeof price !== 'number' || price < 0) {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numPrice) || numPrice < 0) {
       return res.status(400).json({
         message: 'Price must be a non-negative number'
       });
@@ -92,7 +101,7 @@ export const createMenuItem = async (req: MulterRequest, res: Response) => {
     const newMenuItem = menuItemRepository.create({
       name: name.trim(),
       category: category.trim(),
-      price: typeof price === 'string' ? parseFloat(price) : price,
+      price: numPrice,
       description: description?.trim() || null,
       photoUrl,
       preparationTimeMin: preparationTimeMin ? parseInt(preparationTimeMin) : null,
@@ -109,6 +118,20 @@ export const createMenuItem = async (req: MulterRequest, res: Response) => {
 
     const savedMenuItem = await menuItemRepository.save(newMenuItem);
 
+    // Rename the uploaded file to include the item ID
+    if (req.file && savedMenuItem.id) {
+      const oldPath = path.join(__dirname, '../../uploads', req.file.filename);
+      const newFilename = `item-${savedMenuItem.id}-${Date.now()}${path.extname(req.file.filename)}`;
+      const newPath = path.join(__dirname, '../../uploads', newFilename);
+      
+      if (fs.existsSync(oldPath)) {
+        fs.renameSync(oldPath, newPath);
+        // Update the photoUrl with the new filename
+        savedMenuItem.photoUrl = `/uploads/${newFilename}`;
+        await menuItemRepository.save(savedMenuItem);
+      }
+    }
+
     res.status(201).json({
       message: 'Menu item created successfully',
       menuItem: savedMenuItem
@@ -118,6 +141,66 @@ export const createMenuItem = async (req: MulterRequest, res: Response) => {
     console.error('Error creating menu item:', error);
     res.status(500).json({
       message: 'Failed to create menu item',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+export const getPublicMenuItems = async (req: Request, res: Response) => {
+  try {
+    const { 
+      category, 
+      search, 
+      page = 1,
+      limit = 50
+    } = req.query;
+
+    // Build where conditions - always active for public access
+    const whereConditions: any = { isActive: true };
+    
+    if (category) {
+      whereConditions.category = category;
+    }
+
+    // Build query
+    let queryBuilder = menuItemRepository.createQueryBuilder('menuItem')
+      .where(whereConditions);
+
+    // Add search functionality
+    if (search) {
+      queryBuilder = queryBuilder.andWhere(
+        '(LOWER(menuItem.name) LIKE LOWER(:search) OR LOWER(menuItem.description) LIKE LOWER(:search))',
+        { search: `%${search}%` }
+      );
+    }
+
+    // Add sorting - default to name ascending for customers
+    queryBuilder = queryBuilder.orderBy('menuItem.name', 'ASC');
+
+    // Add pagination
+    const pageNumber = Math.max(1, parseInt(page as string));
+    const limitNumber = Math.min(100, Math.max(1, parseInt(limit as string)));
+    const offset = (pageNumber - 1) * limitNumber;
+
+    queryBuilder = queryBuilder.skip(offset).take(limitNumber);
+
+    // Execute query
+    const [menuItems, total] = await queryBuilder.getManyAndCount();
+
+    res.json({
+      menuItems,
+      pagination: {
+        page: pageNumber,
+        limit: limitNumber,
+        total,
+        pages: Math.ceil(total / limitNumber)
+      }
+    });
+
+  } catch (error: any) {
+    console.error('Error fetching public menu items:', error);
+    res.status(500).json({
+      message: 'Failed to fetch menu items',
       error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
@@ -265,7 +348,8 @@ export const updateMenuItem = async (req: MulterRequest, res: Response) => {
 
     // Validate price if provided
     if (price !== undefined) {
-      if (typeof price !== 'number' || price < 0) {
+      const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+      if (isNaN(numPrice) || numPrice < 0) {
         return res.status(400).json({
           message: 'Price must be a non-negative number'
         });

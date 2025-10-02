@@ -6,7 +6,7 @@ import { addToast } from "@heroui/toast";
 import { title, subtitle } from "@/components/primitives";
 import DefaultLayout from "@/layouts/default";
 import { useAuth } from "@/contexts/AuthContext";
-import { orderAPI, tokenManager, type MenuItem, type CartItem, type Order } from "@/services/api";
+import { orderAPI, staffMenuAPI, tokenManager, type MenuItem, type CartItem, type Order } from "@/services/api";
 
 // Simple components to replace HeroUI components
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -169,9 +169,8 @@ export default function DashboardPage() {
   const loadMenuItems = async () => {
     try {
       setIsLoading(true);
-      const items = await orderAPI.getMenuItems();
-      const filteredItems = items.filter(item => item.isActive);
-      setMenuItems(filteredItems);
+      const response = await staffMenuAPI.getPublicMenuItems();
+      setMenuItems(response.menuItems);
     } catch (error) {
       console.error("Failed to load menu items:", error);
       addToast({

@@ -615,13 +615,14 @@ export const getCustomerOrders = async (req: AuthenticatedRequest, res: Response
       });
     }
 
-    const orders = await orderRepository.find({
-      where: { customerId: requestedCustomerId },
-      relations: ['items'],
-      order: { createdAt: 'DESC' },
-      take: Number(limit),
-      skip: Number(offset)
-    });
+    const orders = await orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.items', 'orderItems')
+      .where('order.customerId = :customerId', { customerId: requestedCustomerId })
+      .orderBy('order.createdAt', 'DESC')
+      .take(Number(limit))
+      .skip(Number(offset))
+      .getMany();
 
     const orderHistory = orders.map((order: Order) => ({
       id: order.id,
