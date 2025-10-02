@@ -1,62 +1,62 @@
-# Restaurant Management System - Development Context
+# Restaurant Management System
 
-## Project Overview
-Restaurant management system developed with modern web technologies, focusing on user authentication, menu management, order processing, and staff scheduling capabilities.
+## Quick Start with Docker Compose
 
-## Technical Stack
-- **Backend**: Node.js + Express + TypeScript
-- **Database**: PostgreSQL with TypeORM
-- **Frontend**: React + Vite
-- **Containerization**: Docker & Docker Compose
-- **Testing**: Jest with TypeScript
+### Prerequisites
+- Docker and Docker Compose installed
+- Ports 3000, 5000, 5001, 5432, and 8080 available
 
-# Documentation
-https://localhost:5000/api-docs
-
-## Project Structure
-```
-project/
-├── backend/
-│   ├── src/
-│   │   ├── models/          # TypeORM entities
-│   │   ├── controllers/     # Business logic
-│   │   ├── routes/         # API endpoints
-│   │   ├── migrations/     # DB migrations
-│   │   ├── __tests__/     # Test suite
-│   │   ├── data-source.ts  # DB config
-│   │   └── index.ts       # Entry point
-│   └── package.json
-└── frontend/
-    ├── src/
-    │   ├── components/    # React components
-    │   ├── pages/        # Route pages
-    │   └── main.tsx      # Entry point
-    └── package.json
-```
-
-## Quick Start
-Windows:
-.\start.bat
-
+### Setup & Run
 ```bash
-# Clean start
-docker compose down -v
+# Clone and navigate to project directory
+cd capstone
 
-# Build and start
+# Build and start all services
 docker compose up --build
 
-# Run tests
-cd backend && npm test
+# For clean restart (removes existing data)
+docker compose down -v
+docker compose up --build
 ```
 
-# Run all tests
-npm test
+### Access Points
+- **Frontend**: http://localhost:3000
+- **API Gateway**: http://localhost:8080
+- **Customer API**: http://localhost:5000
+- **Staff API**: http://localhost:5001
+- **API Documentation**: http://localhost:5000/api-docs
 
-# Run specific test files
-npm test -- __tests__/controllers/userAuth.test.ts
-npm test -- __tests__/routes/auth.test.ts
+### Test Accounts
+- **Customer**: `customer1` / `password123`
+- **Staff**: `server1` / `password123`
+- **Manager**: `manager1` / `password123`
 
-# Run tests with coverage
-npm test -- --coverage
+### Troubleshooting
+- **Port conflicts**: Stop conflicting services or change ports in `docker-compose.yml`
+- **Build errors**: Run `docker system prune -a` then rebuild
+- **Database issues**: Use `docker compose down -v` to reset all data
+- **Service health**: Check with `docker compose ps` and `docker compose logs [service-name]`
 
----
+## System Architecture
+
+- **Microservices Design**: Separate customer-api and staff-api services with shared PostgreSQL database  
+- **Frontend**: React TypeScript SPA with HeroUI components and Tailwind CSS  
+- **API Gateway**: Nginx reverse proxy routing requests to appropriate microservices  
+- **Authentication**: JWT-based with role-based access control (customer, staff, manager, admin)
+
+## Feature Completion Status
+
+| 😃 Completed | ☹️ Not Implemented |
+|---|---|
+| User authentication & authorization | Staff utilization reports |
+| Role-based access control | Password reset functionality |
+| Menu CRUD with image upload | Real-time notifications |
+| Customer ordering system | Export functionality |
+| Analytics & reporting dashboard | Email verification |
+| Visual scheduling calendar | Multi-language support |
+| Popular items analytics | Advanced conflict detection |
+| Basic staff scheduling | Export functionality |
+| Profile management | |
+| Rate limiting (Nginx-based) | |
+| Docker containerization | |
+| RESTful API design | |
