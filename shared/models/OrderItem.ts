@@ -2,7 +2,7 @@
  * Line items inside an order, 
  * storing item snapshots (name, price, discounts, totals).
  */
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Order } from './Order';
 import { decimalTransformer } from './transformers';
 
@@ -17,6 +17,7 @@ export class OrderItem {
   orderId: number;
 
   @ManyToOne(() => Order, o => o.items, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'order_id' })
   order: Order;
 
   @Column({ name: 'menu_item_id', type: 'int' })
