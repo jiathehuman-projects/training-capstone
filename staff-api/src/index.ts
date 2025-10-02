@@ -7,6 +7,7 @@ import authRouter from './routes/auth';
 import orderRouter from './routes/order';
 import staffRouter from './routes/staff';
 import analyticsRouter from './routes/analytics';
+import menuRouter from './routes/menu';
 import { setupSwagger } from '../shared/config/swagger';
 import path from 'path';
 
@@ -45,6 +46,7 @@ AppDataSource.initialize()
     // Staff-focused routes
     app.use("/auth", authRouter);           // Staff/Manager/Admin login
     app.use("/api/staff", staffRouter);     // Staff management
+    app.use("/api/staff/menu", menuRouter);  // Manager menu management
     app.use("/api/analytics", analyticsRouter); // Analytics for managers
     app.use("/orders", orderRouter);        // Staff can view/update orders
     

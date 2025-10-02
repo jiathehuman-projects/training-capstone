@@ -12,7 +12,7 @@ import { title } from '@/components/primitives';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPrimaryRole } from '@/components/roleUtils';
 import { 
-  menuAPI, 
+  staffMenuAPI, 
   type MenuItem, 
   type CreateMenuItemRequest, 
   type UpdateMenuItemRequest,
@@ -92,7 +92,7 @@ export default function ManagerMenu() {
   const loadCategories = async () => {
     try {
       setCategoriesLoading(true);
-      const response: CategoriesResponse = await menuAPI.getCategories();
+      const response: CategoriesResponse = await staffMenuAPI.getCategories();
       setCategories(response.categories);
     } catch (error) {
       console.error('Error loading categories:', error);
@@ -130,7 +130,7 @@ export default function ManagerMenu() {
         limit: 10,
       };
 
-      const response: MenuItemsResponse = await menuAPI.getMenuItems(params);
+      const response: MenuItemsResponse = await staffMenuAPI.getMenuItems(params);
       setMenuItems(response.menuItems);
       setTotalPages(response.pagination.pages);
     } catch (error) {
@@ -216,7 +216,7 @@ export default function ManagerMenu() {
       };
 
       if (isEditing && editingItem) {
-        await menuAPI.updateMenuItem(editingItem.id, {
+        await staffMenuAPI.updateMenuItem(editingItem.id, {
           ...requestData,
           isActive: formData.isActive,
         });
@@ -226,7 +226,7 @@ export default function ManagerMenu() {
           color: 'success',
         });
       } else {
-        await menuAPI.createMenuItem(requestData as CreateMenuItemRequest);
+        await staffMenuAPI.createMenuItem(requestData as CreateMenuItemRequest);
         addToast({
           title: 'Success', 
           description: 'Menu item created successfully',
@@ -271,7 +271,7 @@ export default function ManagerMenu() {
     if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return;
 
     try {
-      await menuAPI.deleteMenuItem(item.id);
+      await staffMenuAPI.deleteMenuItem(item.id);
       addToast({
         title: 'Success',
         description: 'Menu item deleted successfully',

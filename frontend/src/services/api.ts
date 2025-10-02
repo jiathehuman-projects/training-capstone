@@ -388,6 +388,59 @@ export const menuAPI = {
   },
 };
 
+// Staff Menu API functions (for managers)
+export const staffMenuAPI = {
+  getMenuItems: async (params?: {
+    category?: string;
+    isActive?: boolean;
+    search?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: string;
+    sortOrder?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<MenuItemsResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = queryParams.toString();
+    const url = `/api/staff/menu${queryString ? `?${queryString}` : ''}`;
+    const response = await api.get<MenuItemsResponse>(url);
+    return response.data;
+  },
+
+  getMenuItem: async (id: number): Promise<MenuItem> => {
+    const response = await api.get<{message: string, menuItem: MenuItem}>(`/api/staff/menu/${id}`);
+    return response.data.menuItem;
+  },
+
+  createMenuItem: async (data: CreateMenuItemRequest): Promise<MenuItem> => {
+    const response = await api.post<{message: string, menuItem: MenuItem}>('/api/staff/menu', data);
+    return response.data.menuItem;
+  },
+
+  updateMenuItem: async (id: number, data: UpdateMenuItemRequest): Promise<MenuItem> => {
+    const response = await api.put<{message: string, menuItem: MenuItem}>(`/api/staff/menu/${id}`, data);
+    return response.data.menuItem;
+  },
+
+  deleteMenuItem: async (id: number): Promise<MenuItem> => {
+    const response = await api.delete<{message: string, menuItem: MenuItem}>(`/api/staff/menu/${id}`);
+    return response.data.menuItem;
+  },
+
+  getCategories: async (): Promise<CategoriesResponse> => {
+    const response = await api.get<CategoriesResponse>('/api/staff/menu/categories');
+    return response.data;
+  },
+};
+
 // Shift and Staff API functions
 export const shiftAPI = {
   getShifts: async (startDate?: string, endDate?: string): Promise<Shift[]> => {
