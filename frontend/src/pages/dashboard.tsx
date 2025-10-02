@@ -780,7 +780,7 @@ function MenuStep({ groupedMenuItems, isLoading, onAddToCart, formatPrice, getEf
               return (
                 <Card key={item.id} className={`${isOutOfStock ? 'opacity-60' : ''}`}>
                   <CardHeader className="pb-2">
-                    <div className="w-full h-32 bg-gray-200 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                    <div className="w-32 h-32 bg-gray-200 rounded-lg mb-2 flex items-center justify-center overflow-hidden mx-auto">
                       {item.photoUrl ? (
                         <img 
                           src={item.photoUrl} 
