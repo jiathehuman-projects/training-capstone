@@ -44,6 +44,10 @@ interface MenuItemFormData {
   qtyOnHand: string;
   reorderThreshold: string;
   isActive: boolean;
+  // Promotion fields
+  promoPercent: string;
+  promoStartsAt: string;
+  promoEndsAt: string;
 }
 
 const initialFormData: MenuItemFormData = {
@@ -57,6 +61,10 @@ const initialFormData: MenuItemFormData = {
   qtyOnHand: '0',
   reorderThreshold: '10',
   isActive: true,
+  // Promotion fields
+  promoPercent: '',
+  promoStartsAt: '',
+  promoEndsAt: '',
 };
 
 export default function ManagerMenu() {
@@ -125,7 +133,7 @@ export default function ManagerMenu() {
       const params = {
         ...(searchTerm && { search: searchTerm }),
         ...(categoryFilter && { category: categoryFilter }),
-        ...(activeFilter !== '' && { active: activeFilter as boolean }),
+        ...(activeFilter !== '' && { isActive: activeFilter as boolean }),
         page: currentPage,
         limit: 10,
       };
@@ -213,6 +221,16 @@ export default function ManagerMenu() {
         ...(formData.reorderThreshold && { 
           reorderThreshold: parseInt(formData.reorderThreshold) 
         }),
+        // Promotion fields
+        ...(formData.promoPercent && { 
+          promoPercent: parseFloat(formData.promoPercent) 
+        }),
+        ...(formData.promoStartsAt && { 
+          promoStartsAt: formData.promoStartsAt 
+        }),
+        ...(formData.promoEndsAt && { 
+          promoEndsAt: formData.promoEndsAt 
+        }),
       };
 
       if (isEditing && editingItem) {
@@ -263,6 +281,10 @@ export default function ManagerMenu() {
       qtyOnHand: item.qtyOnHand?.toString() || '0',
       reorderThreshold: item.reorderThreshold?.toString() || '0',
       isActive: item.isActive ?? true,
+      // Promotion fields
+      promoPercent: item.promoPercent?.toString() || '',
+      promoStartsAt: item.promoStartsAt ? new Date(item.promoStartsAt).toISOString().slice(0, 16) : '',
+      promoEndsAt: item.promoEndsAt ? new Date(item.promoEndsAt).toISOString().slice(0, 16) : '',
     });
     onOpen();
   };
@@ -301,6 +323,22 @@ export default function ManagerMenu() {
   };
 
   const formatPrice = (price: number | undefined) => `$${(price ?? 0).toFixed(2)}`;
+
+  // Helper function to check if item has active promotion
+  const hasActivePromotion = (item: MenuItem) => {
+    if (!item.promoPercent || !item.promoStartsAt || !item.promoEndsAt) return false;
+    const now = new Date();
+    const startDate = new Date(item.promoStartsAt);
+    const endDate = new Date(item.promoEndsAt);
+    return now >= startDate && now <= endDate && item.promoPercent > 0;
+  };
+
+  // Helper function to calculate discounted price
+  const getDiscountedPrice = (item: MenuItem) => {
+    if (!hasActivePromotion(item)) return item.price;
+    const discount = item.promoPercent! / 100;
+    return item.price * (1 - discount);
+  };
 
   const getStockStatus = (item: MenuItem) => {
     const qty = item.qtyOnHand ?? 0;
@@ -357,10 +395,11 @@ export default function ManagerMenu() {
             </Select>
             <Select
               placeholder="Filter by status"
-              value={activeFilter === '' ? '' : activeFilter.toString()}
+              selectedKeys={activeFilter === '' ? [] : [activeFilter.toString()]}
               onSelectionChange={(keys) => {
                 const value = Array.from(keys as Set<string>)[0];
                 setActiveFilter(value === '' ? '' : value === 'true');
+                setCurrentPage(1); // Reset to first page when filter changes
               }}
               className="max-w-xs"
             >
@@ -412,7 +451,25 @@ export default function ManagerMenu() {
                             </Chip>
                           </td>
                           <td className="p-3 text-white font-semibold">
-                            {formatPrice(item.price)}
+                            <div className="flex flex-col gap-1">
+                              {hasActivePromotion(item) ? (
+                                <>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-green-400 font-bold">
+                                      {formatPrice(getDiscountedPrice(item))}
+                                    </span>
+                                    <Chip size="sm" color="warning" variant="solid">
+                                      -{item.promoPercent}%
+                                    </Chip>
+                                  </div>
+                                  <span className="text-gray-400 text-sm line-through">
+                                    {formatPrice(item.price)}
+                                  </span>
+                                </>
+                              ) : (
+                                formatPrice(item.price)
+                              )}
+                            </div>
                           </td>
                           <td className="p-3">
                             <div className="flex flex-col gap-1">
@@ -605,6 +662,53 @@ export default function ManagerMenu() {
                         </SelectItem>
                       ))}
                     </Select>
+
+                    {/* Promotion Section */}
+                    <div className="space-y-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border border-orange-200">
+                      <h4 className="text-lg font-semibold text-orange-800">
+                        🎯 Promotion Settings
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Set a temporary discount for this menu item
+                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Input
+                          label="Discount (%)"
+                          placeholder="e.g., 20"
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={formData.promoPercent}
+                          onValueChange={(value: string) => setFormData({ ...formData, promoPercent: value })}
+                          description="Percentage discount (0-100%)"
+                        />
+                        <Input
+                          label="Start Date & Time"
+                          type="datetime-local"
+                          value={formData.promoStartsAt}
+                          onValueChange={(value: string) => setFormData({ ...formData, promoStartsAt: value })}
+                          description="When promotion begins"
+                        />
+                        <Input
+                          label="End Date & Time"
+                          type="datetime-local"
+                          value={formData.promoEndsAt}
+                          onValueChange={(value: string) => setFormData({ ...formData, promoEndsAt: value })}
+                          description="When promotion ends"
+                        />
+                      </div>
+                      
+                      {formData.promoPercent && formData.price && (
+                        <div className="p-3 bg-green-50 rounded-md border border-green-200">
+                          <p className="text-sm text-green-800">
+                            <strong>Discounted Price:</strong> ${(parseFloat(formData.price) * (1 - parseFloat(formData.promoPercent) / 100)).toFixed(2)}
+                            {' '}(was ${parseFloat(formData.price).toFixed(2)})
+                          </p>
+                        </div>
+                      )}
+                    </div>
 
                     {isEditing && (
                       <div className="flex items-center gap-2">

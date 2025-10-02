@@ -149,6 +149,10 @@ export interface CreateMenuItemRequest {
   allergens?: string[];
   qtyOnHand: number;
   reorderThreshold?: number;
+  // Promotion fields
+  promoPercent?: number;
+  promoStartsAt?: string;
+  promoEndsAt?: string;
 }
 
 export interface UpdateMenuItemRequest extends Partial<CreateMenuItemRequest> {
