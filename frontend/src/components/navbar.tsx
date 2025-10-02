@@ -37,38 +37,13 @@ export const Navbar = () => {
           >
             <Logo />
             <p className="font-bold text-lg bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent">
-              DIM SUMTHING WONG
+              NIGHT BAO
             </p>
           </Link>
         </NavbarBrand>
       </NavbarContent>
 
-      <NavbarContent justify="center" className="hidden sm:flex">
-        <NavbarItem>
-          <Link
-            href="/"
-            className="text-white hover:text-blue-400 transition-colors font-medium"
-          >
-            Home
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link
-            href="/menu"
-            className="text-white hover:text-blue-400 transition-colors font-medium"
-          >
-            Menu
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link
-            href="/about"
-            className="text-white hover:text-blue-400 transition-colors font-medium"
-          >
-            About
-          </Link>
-        </NavbarItem>
-      </NavbarContent>
+
 
       <NavbarContent justify="end">
         {isAuthenticated ? (
