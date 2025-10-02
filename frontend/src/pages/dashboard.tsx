@@ -97,7 +97,7 @@ const ModalFooter = ({ children }: { children: React.ReactNode }) => (
   <div className="p-6 pt-2 flex justify-end gap-2">{children}</div>
 );
 
-type OrderStep = 'menu' | 'cart' | 'confirmation';
+type OrderStep = 'menu' | 'cart' | 'orders';
 
 // Group menu items by category
 const groupByCategory = (items: MenuItem[]) => {
@@ -270,10 +270,6 @@ export default function DashboardPage() {
     setCurrentStep('cart');
   };
 
-  const proceedToConfirmation = () => {
-    setCurrentStep('confirmation');
-  };
-
   const confirmOrder = async () => {
     console.log('🔍 Confirming order...');
     
@@ -336,7 +332,7 @@ export default function DashboardPage() {
         tableNumber: selectedTable,
       };
       
-      console.log('� Order data being sent:', orderData);
+      console.log('📋 Order data being sent:', orderData);
       
       // Call the backend API to create the order
       const createdOrder = await orderAPI.createOrder(orderData);
@@ -359,9 +355,9 @@ export default function DashboardPage() {
         color: "success",
       });
       
-      // Clear cart and reset to menu view
+      // Clear cart and navigate to orders view
       setCart([]);
-      setCurrentStep('menu');
+      setCurrentStep('orders');
       
       // Refresh customer orders to show the new order
       await loadCustomerOrders();
@@ -531,7 +527,6 @@ export default function DashboardPage() {
               </select>
             </div>
 
-            
             {cart.length > 0 && (
               <div className="flex items-center gap-2 ml-auto">
                 <Chip color="primary">
@@ -568,12 +563,11 @@ export default function DashboardPage() {
                 Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)})
               </Button>
               <Button
-                color={currentStep === 'confirmation' ? 'primary' : 'default'}
-                variant={currentStep === 'confirmation' ? 'solid' : 'flat'}
-                onPress={() => cart.length > 0 && setCurrentStep('confirmation')}
-                isDisabled={cart.length === 0}
+                color={currentStep === 'orders' ? 'primary' : 'default'}
+                variant={currentStep === 'orders' ? 'solid' : 'flat'}
+                onPress={() => setCurrentStep('orders')}
               >
-                Confirm
+                Current Orders ({currentOrders.length})
               </Button>
             </div>
           </div>
@@ -597,6 +591,7 @@ export default function DashboardPage() {
           <CartStep
             cart={cart}
             menuItems={menuItems}
+            selectedTable={selectedTable}
             subtotal={subtotal}
             taxAmount={taxAmount}
             total={total}
@@ -606,35 +601,21 @@ export default function DashboardPage() {
             onRemoveItem={removeFromCart}
             onClearCart={clearCart}
             onBackToMenu={() => setCurrentStep('menu')}
-            onProceedToConfirm={proceedToConfirmation}
-          />
-        )}
-
-        {currentStep === 'confirmation' && (
-          <ConfirmationStep
-            cart={cart}
-            menuItems={menuItems}
-            selectedTable={selectedTable}
-            subtotal={subtotal}
-            taxAmount={taxAmount}
-            total={total}
-            formatPrice={formatPrice}
-            getEffectivePrice={getEffectivePrice}
-            isLoading={isLoading}
-            onBackToCart={() => setCurrentStep('cart')}
             onConfirmOrder={confirmOrder}
+            isLoading={isLoading}
           />
         )}
 
-        {/* Current Orders */}
-        <CurrentOrdersSection
-          orders={currentOrders}
-          isLoading={isOrdersLoading}
-          formatPrice={formatPrice}
-          getStatusColor={getStatusColor}
-          onCancelOrder={cancelOrder}
-          menuItems={menuItems}
-        />
+        {currentStep === 'orders' && (
+          <CurrentOrdersSection
+            orders={currentOrders}
+            isLoading={isOrdersLoading}
+            formatPrice={formatPrice}
+            getStatusColor={getStatusColor}
+            onCancelOrder={cancelOrder}
+            menuItems={menuItems}
+          />
+        )}
 
         {/* Order Confirmation Success Modal */}
         <Modal isOpen={showConfirmModal} onClose={() => setShowConfirmModal(false)}>
@@ -809,8 +790,6 @@ function MenuStep({ groupedMenuItems, isLoading, onAddToCart, formatPrice, getEf
                     {item.description && (
                       <p className="text-gray-600 text-sm mb-3">{item.description}</p>
                     )}
-                    
-
 
                     {isOutOfStock ? (
                       <Chip color="danger" className="w-full">
@@ -871,9 +850,20 @@ function MenuStep({ groupedMenuItems, isLoading, onAddToCart, formatPrice, getEf
 
 // Cart Step Component
 function CartStep({ 
-  cart, menuItems, subtotal, taxAmount, total, formatPrice, getEffectivePrice,
-  onUpdateQuantity, onRemoveItem, onClearCart, onBackToMenu, onProceedToConfirm 
+  cart, menuItems, selectedTable, subtotal, taxAmount, total, formatPrice, getEffectivePrice,
+  onUpdateQuantity, onRemoveItem, onClearCart, onBackToMenu, onConfirmOrder, isLoading 
 }: any) {
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  
+  const handleConfirmClick = () => {
+    setShowConfirmModal(true);
+  };
+  
+  const handleFinalConfirm = () => {
+    setShowConfirmModal(false);
+    onConfirmOrder();
+  };
+
   if (cart.length === 0) {
     return (
       <div className="bg-white border border-gray-300 rounded-xl p-6 shadow-lg text-center">
@@ -975,127 +965,16 @@ function CartStep({
       </div>
 
       <div className="flex gap-4 mt-6">
-        <Button variant="flat" onPress={onBackToMenu} className="flex-1">
+        <Button variant="flat" onPress={onBackToMenu} className="flex-1" disabled={isLoading}>
           Back to Menu
         </Button>
-        <Button color="primary" onPress={onProceedToConfirm} className="flex-1">
-          Proceed to Confirm
+        <Button color="primary" onPress={handleConfirmClick} className="flex-1" disabled={isLoading}>
+          Place Order
         </Button>
       </div>
-    </div>
-  );
-}
-
-// Confirmation Step Component
-function ConfirmationStep({ 
-  cart, menuItems, selectedTable, subtotal, taxAmount, total, formatPrice, getEffectivePrice,
-  isLoading, onBackToCart, onConfirmOrder 
-}: any) {
-  const [showFinalConfirmation, setShowFinalConfirmation] = useState(false);
-  
-  const handleConfirmClick = () => {
-    setShowFinalConfirmation(true);
-  };
-  
-  const handleFinalConfirm = () => {
-    setShowFinalConfirmation(false);
-    onConfirmOrder();
-  };
-
-  return (
-    <>
-      <div className="bg-white border border-gray-300 rounded-xl p-6 shadow-lg">
-        <h2 className="text-2xl font-bold text-black mb-6">Review & Confirm Your Order</h2>
-        
-        {/* Important Notice */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <h3 className="text-sm font-semibold text-blue-800 mb-1">📋 Please Review Carefully</h3>
-          <p className="text-blue-700 text-sm">
-            Once confirmed, your order will be sent to the kitchen. Changes may not be possible.
-          </p>
-        </div>
-        
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-black">Order Details</h3>
-            <div className="text-right">
-              <p className="text-gray-600 text-sm">Table Number</p>
-              <p className="font-semibold text-black text-lg">#{selectedTable}</p>
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="space-y-3">
-              {cart.map((item: CartItem, index: number) => {
-                const menuItem = menuItems.find((mi: MenuItem) => mi.id === item.menuItemId);
-                if (!menuItem) return null;
-
-                const effectivePrice = getEffectivePrice(menuItem);
-                const itemTotal = effectivePrice * item.quantity;
-
-                return (
-                  <div key={`${item.menuItemId}-${item.customizations}-${index}`} className="flex justify-between items-start">
-                    <div className="flex-1 mr-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-black">{menuItem.name}</span>
-                        {menuItem.hasPromo && (
-                          <Chip color="success" size="sm">-{menuItem.promoPercent}%</Chip>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-gray-600 text-sm">Qty: {item.quantity}</span>
-                        <span className="text-gray-400">•</span>
-                        <span className="text-gray-600 text-sm">{formatPrice(effectivePrice)} each</span>
-                      </div>
-                      {item.customizations && (
-                        <p className="text-gray-500 text-sm mt-1">
-                          <span className="font-medium">Note:</span> {item.customizations}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <span className="font-semibold text-black">{formatPrice(itemTotal)}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Order Summary */}
-        <div className="border-t border-gray-200 pt-4 space-y-3 mb-6">
-          <div className="flex justify-between text-black">
-            <span>Subtotal ({cart.reduce((sum: number, item: CartItem) => sum + item.quantity, 0)} items):</span>
-            <span>{formatPrice(subtotal)}</span>
-          </div>
-          <div className="flex justify-between text-black">
-            <span>Tax (8.75%):</span>
-            <span>{formatPrice(taxAmount)}</span>
-          </div>
-          <div className="flex justify-between font-bold text-xl text-black border-t border-gray-200 pt-3">
-            <span>Total Amount:</span>
-            <span className="text-green-600">{formatPrice(total)}</span>
-          </div>
-        </div>
-
-        <div className="flex gap-4">
-          <Button variant="flat" onPress={onBackToCart} className="flex-1" disabled={isLoading}>
-            Back to Cart
-          </Button>
-          <Button 
-            color="primary" 
-            onPress={handleConfirmClick} 
-            className="flex-1"
-            disabled={isLoading}
-          >
-            Place Order
-          </Button>
-        </div>
-      </div>
-
-      {/* Final Confirmation Modal */}
-      <Modal isOpen={showFinalConfirmation} onClose={() => setShowFinalConfirmation(false)}>
+      
+      {/* Confirmation Modal */}
+      <Modal isOpen={showConfirmModal} onClose={() => setShowConfirmModal(false)}>
         <ModalContent>
           <ModalHeader>
             Confirm Order Placement
@@ -1108,7 +987,7 @@ function ConfirmationStep({
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Total Items:</span>
-                  <span className="font-medium">{cart.reduce((sum: number, item: CartItem) => sum + item.quantity, 0)}</span>
+                  <span className="font-medium">{cart.reduce((sum: number, item: any) => sum + item.quantity, 0)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Total Amount:</span>
@@ -1123,7 +1002,7 @@ function ConfirmationStep({
           <ModalFooter>
             <Button 
               variant="flat" 
-              onPress={() => setShowFinalConfirmation(false)}
+              onPress={() => setShowConfirmModal(false)}
               disabled={isLoading}
             >
               Cancel
@@ -1138,7 +1017,7 @@ function ConfirmationStep({
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </>
+    </div>
   );
 }
 
