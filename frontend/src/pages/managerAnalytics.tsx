@@ -298,11 +298,20 @@ const ManagerAnalytics: React.FC = () => {
 
     const { staffUtilization } = data;
     
-    if (!staffUtilization || !Array.isArray(staffUtilization.data)) {
+    if (!staffUtilization) {
       return <div className="text-gray-400">No staff utilization data available</div>;
     }
 
-    const staffData = staffUtilization.data as any[];
+    // Handle both aggregated and non-aggregated data formats
+    let staffData: any[] = [];
+    if (Array.isArray(staffUtilization.data)) {
+      staffData = staffUtilization.data;
+    } else if (staffUtilization.data && staffUtilization.data.departmentBreakdown) {
+      // If we have department breakdown, we can display that
+      staffData = staffUtilization.data.departmentBreakdown;
+    } else {
+      return <div className="text-gray-400">No staff utilization data available</div>;
+    }
 
     return (
       <div className="space-y-6">
@@ -313,24 +322,40 @@ const ManagerAnalytics: React.FC = () => {
           <Divider className="bg-gray-700" />
           <CardBody>
             <div className="space-y-2">
-              {staffData.map((staff: any, index: number) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded">
-                  <div>
-                    <span className="text-white font-medium">{staff.name}</span>
-                    <span className="text-gray-400 text-sm ml-2">
-                      ({staff.roles.join(', ')})
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-blue-400 font-semibold">
-                      {staff.totalHours}h worked
+              {staffData.map((item: any, index: number) => {
+                // Handle both individual staff and department formats
+                const isStaffItem = item.name !== undefined;
+                const isDeptItem = item.department !== undefined;
+                
+                return (
+                  <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded">
+                    <div>
+                      {isStaffItem && (
+                        <>
+                          <span className="text-white font-medium">{item.name}</span>
+                          <span className="text-gray-400 text-sm ml-2">
+                            ({item.roles.join(', ')})
+                          </span>
+                        </>
+                      )}
+                      {isDeptItem && (
+                        <span className="text-white font-medium">{item.department} Department</span>
+                      )}
                     </div>
-                    <div className="text-green-400 text-sm">
-                      {staff.attendanceRate.toFixed(1)}% attendance
+                    <div className="text-right">
+                      <div className="text-blue-400 font-semibold">
+                        {item.totalHours}h {isDeptItem ? 'total' : 'worked'}
+                      </div>
+                      <div className="text-green-400 text-sm">
+                        {isDeptItem ? 
+                          `${item.staffCount} staff members` : 
+                          `${item.attendanceRate.toFixed(1)}% attendance`
+                        }
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardBody>
         </Card>
@@ -344,8 +369,8 @@ const ManagerAnalytics: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>
-            <h1 className={title({ size: 'lg', class: 'text-white mb-2' })}>Analytics Dashboard</h1>
-            <p className="text-gray-300">Monitor your restaurant's performance and insights</p>
+            <h1 className={title({ size: 'lg', color: 'foreground', class: 'mb-2' })}>Analytics Dashboard</h1>
+            <p className="text-gray-100">Monitor your restaurant's performance and insights</p>
           </div>
           
           <div className="flex items-center gap-4 mt-4 md:mt-0">
@@ -359,10 +384,12 @@ const ManagerAnalytics: React.FC = () => {
                 trigger: "bg-gray-800 border-gray-700 text-white",
                 listbox: "bg-gray-800",
                 popoverContent: "bg-gray-800 border-gray-700",
+                label: "text-gray-300",
+                value: "text-white",
               }}
             >
               {TIME_PERIODS.map((period) => (
-                <SelectItem key={period.value}>
+                <SelectItem key={period.value} className="text-white">
                   {period.label}
                 </SelectItem>
               ))}
@@ -400,7 +427,7 @@ const ManagerAnalytics: React.FC = () => {
               variant={selectedTab === tab.key ? 'solid' : 'ghost'}
               color={selectedTab === tab.key ? 'primary' : 'default'}
               onPress={() => setSelectedTab(tab.key)}
-              className="flex-1"
+              className={`flex-1 ${selectedTab === tab.key ? '' : 'text-gray-300 hover:text-white'}`}
             >
               {tab.label}
             </Button>
