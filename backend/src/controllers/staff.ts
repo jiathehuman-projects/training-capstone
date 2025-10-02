@@ -1036,3 +1036,175 @@ export const getAllStaff = async (req: AuthenticatedRequest, res: Response) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+export const getAllApplicationsForManager = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!isManagerUser(req.currentUser!)) {
+      return res.status(403).json({
+        error: 'Access denied: Manager role required'
+      });
+    }
+
+    const applications = await shiftApplicationRepository.find({
+      relations: ['shift', 'shift.template', 'staff', 'desiredRequirement'],
+      order: { appliedAt: 'DESC' }
+    });
+
+    const applicationsWithDetails = applications.map(app => ({
+      id: app.id,
+      staffId: app.staffId,
+      staffName: app.staff ? `${app.staff.firstName} ${app.staff.lastName}` : 'Unknown Staff',
+      staffWorkerRoles: app.staff?.workerRoles || [],
+      shift: app.shift ? {
+        id: app.shift.id,
+        shiftDate: app.shift.shiftDate,
+        template: app.shift.template ? {
+          name: app.shift.template.name,
+          startTime: app.shift.template.startTime,
+          endTime: app.shift.template.endTime
+        } : null
+      } : null,
+      desiredRole: app.desiredRequirement?.roleName || null,
+      desiredRequirementId: app.desiredRequirementId,
+      status: app.status,
+      appliedAt: app.appliedAt,
+      hasTimeConflict: false // Will be calculated if needed
+    }));
+
+    return res.status(200).json({
+      message: 'Applications retrieved successfully',
+      applications: applicationsWithDetails
+    });
+
+  } catch (err) {
+    const error = err as Error;
+    console.error('Get all applications error:', error);
+    return res.status(500).json({
+      error: 'Failed to retrieve applications',
+      message: error.message || 'An unknown error occurred'
+    });
+  }
+};
+
+export const approveAndAssignApplication = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!isManagerUser(req.currentUser!)) {
+      return res.status(403).json({
+        error: 'Access denied: Manager role required'
+      });
+    }
+
+    const applicationId = parseInt(req.params.applicationId);
+
+    if (isNaN(applicationId)) {
+      return res.status(400).json({
+        error: 'Invalid application ID'
+      });
+    }
+
+    const application = await shiftApplicationRepository.findOne({
+      where: { id: applicationId },
+      relations: ['shift', 'shift.template', 'staff', 'desiredRequirement']
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        error: 'Application not found'
+      });
+    }
+
+    if (application.status !== ShiftApplicationStatus.APPLIED) {
+      return res.status(400).json({
+        error: 'Application has already been processed'
+      });
+    }
+
+    // Check for time conflicts - block if conflicts exist
+    const hasConflicts = application.shift.template ? 
+      await checkOverlappingShifts(
+        application.staffId,
+        application.shift.shiftDate,
+        application.shift.template.id
+      ) : false;
+
+    if (hasConflicts) {
+      return res.status(400).json({
+        error: 'Cannot approve application - staff member has time conflicts with existing assignments'
+      });
+    }
+
+    // Check if staff is already assigned to this shift
+    const existingAssignment = await shiftAssignmentRepository.findOne({
+      where: { shiftId: application.shiftId, staffId: application.staffId }
+    });
+
+    if (existingAssignment) {
+      return res.status(400).json({
+        error: 'Staff member is already assigned to this shift'
+      });
+    }
+
+    // Validate the desired requirement still exists and is available
+    if (!application.desiredRequirementId) {
+      return res.status(400).json({
+        error: 'Application does not specify a desired role'
+      });
+    }
+
+    const requirement = await shiftRequirementRepository.findOne({
+      where: { id: application.desiredRequirementId, shiftId: application.shiftId }
+    });
+
+    if (!requirement) {
+      return res.status(400).json({
+        error: 'Desired requirement no longer exists for this shift'
+      });
+    }
+
+    // Check if requirement is already filled
+    const existingAssignments = await shiftAssignmentRepository.count({
+      where: { requirementId: application.desiredRequirementId }
+    });
+
+    if (existingAssignments >= requirement.requiredCount) {
+      return res.status(400).json({
+        error: 'This role is already fully staffed for this shift'
+      });
+    }
+
+    // Verify staff has the required worker role
+    if (!application.staff?.workerRoles?.includes(requirement.roleName)) {
+      return res.status(400).json({
+        error: `Staff member does not have the required '${requirement.roleName}' role`
+      });
+    }
+
+    // All validations passed - approve and assign
+    application.status = ShiftApplicationStatus.APPROVED;
+    await shiftApplicationRepository.save(application);
+
+    // Create assignment
+    const assignment = shiftAssignmentRepository.create({
+      shiftId: application.shiftId,
+      requirementId: application.desiredRequirementId,
+      staffId: application.staffId,
+      assignedAt: new Date()
+    });
+
+    await shiftAssignmentRepository.save(assignment);
+
+    return res.status(200).json({
+      message: 'Application approved and staff assigned successfully',
+      applicationId: application.id,
+      assignmentId: assignment.id
+    });
+
+  } catch (err) {
+    const error = err as Error;
+    console.error('Approve and assign application error:', error);
+    return res.status(500).json({
+      error: 'Failed to approve and assign application',
+      message: error.message || 'An unknown error occurred'
+    });
+  }
+};

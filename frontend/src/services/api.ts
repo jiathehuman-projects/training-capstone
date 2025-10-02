@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -208,17 +208,21 @@ export interface ShiftApplication {
   id: number;
   staffId: number;
   staffName: string;
+  staffWorkerRoles: string[];
   desiredRequirementId: number | null;
   status: 'applied' | 'approved' | 'rejected' | 'withdrawn';
   appliedAt: Date;
   shift?: {
     id: number;
     shiftDate: string;
-    template: string;
-    startTime: string;
-    endTime: string;
+    template?: {
+      name: string;
+      startTime: string;
+      endTime: string;
+    } | null;
   } | null;
   desiredRole?: string | null;
+  hasTimeConflict?: boolean;
 }
 
 export interface ShiftAssignment {
@@ -420,6 +424,207 @@ export const shiftAPI = {
 
   getAllStaff: async (): Promise<StaffResponse> => {
     const response = await api.get<StaffResponse>('/api/staff/all');
+    return response.data;
+  },
+
+  getAllApplicationsForManager: async (): Promise<ShiftApplication[]> => {
+    const response = await api.get<{message: string, applications: ShiftApplication[]}>('/api/staff/applications/all');
+    return response.data.applications;
+  },
+
+  approveAndAssignApplication: async (applicationId: number): Promise<void> => {
+    await api.put(`/api/staff/application/${applicationId}/approve`);
+  },
+
+  declineApplication: async (applicationId: number): Promise<void> => {
+    await api.put(`/api/staff/application/${applicationId}/decline`);
+  },
+};
+
+// Analytics types
+export interface AnalyticsMetadata {
+  period: string;
+  dateRange: {
+    start: string;
+    end: string;
+  };
+  [key: string]: any;
+}
+
+export interface MenuPerformanceItem {
+  menuItemId: number;
+  name: string;
+  category: string;
+  quantitySold: number;
+  revenue: number;
+  averageOrderValue: number;
+  timesOrdered: number;
+}
+
+export interface MenuPerformanceResponse {
+  message: string;
+  metadata: AnalyticsMetadata & {
+    totalMenuItems: number;
+    totalItemsSold: number;
+    totalRevenue: number;
+    averageItemPrice: number;
+  };
+  data: MenuPerformanceItem[] | {
+    topSellingItems: MenuPerformanceItem[];
+    categoryBreakdown: any;
+    summary: {
+      bestPerformer: MenuPerformanceItem | null;
+      worstPerformer: MenuPerformanceItem | null;
+    };
+  };
+}
+
+export interface StaffUtilizationItem {
+  staffId: number;
+  name: string;
+  roles: string[];
+  totalHours: number;
+  scheduledShifts: number;
+  completedShifts: number;
+  attendanceRate: number;
+  averageHoursPerShift: number;
+}
+
+export interface StaffUtilizationResponse {
+  message: string;
+  metadata: AnalyticsMetadata & {
+    totalStaff: number;
+    totalHoursWorked: number;
+    overallAttendanceRate: number;
+    averageHoursPerStaff: number;
+  };
+  data: StaffUtilizationItem[] | {
+    summary: {
+      topPerformer: StaffUtilizationItem | null;
+      highestAttendance: StaffUtilizationItem | null;
+      mostReliable: number;
+    };
+    departmentBreakdown: any;
+  };
+}
+
+export interface RevenueAnalyticsResponse {
+  message: string;
+  metadata: AnalyticsMetadata & {
+    totalRevenue: number;
+    totalOrders: number;
+    averageOrderValue: number;
+    totalTax: number;
+    totalTips: number;
+  };
+  data: {
+    summary?: {
+      peakDay: any;
+      averageDailyRevenue: number;
+    };
+    dailyBreakdown?: Array<{
+      date: string;
+      revenue: number;
+    }>;
+    orders?: Array<{
+      id: number;
+      date: Date;
+      totalAmount: number;
+      taxAmount: number;
+      tipAmount: number;
+      tableNumber: number;
+    }>;
+    dailyTotals?: Array<{
+      date: string;
+      revenue: number;
+    }>;
+  };
+  comparison?: {
+    previous: {
+      period: { start: string; end: string };
+      totalRevenue: number;
+      totalOrders: number;
+      averageOrderValue: number;
+    };
+    growth: {
+      revenue: number;
+      orders: number;
+      averageOrderValue: number;
+    };
+  };
+}
+
+export interface SystemUsageResponse {
+  message: string;
+  metadata: AnalyticsMetadata;
+  data: any;
+}
+
+// Analytics API functions
+export const analyticsAPI = {
+  getMenuPerformance: async (params?: {
+    period?: string;
+    startDate?: string;
+    endDate?: string;
+    aggregated?: boolean;
+  }): Promise<MenuPerformanceResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.period) queryParams.append('period', params.period);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    if (params?.aggregated !== undefined) queryParams.append('aggregated', params.aggregated.toString());
+    
+    const response = await api.get<MenuPerformanceResponse>(`/api/analytics/menu-performance?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  getStaffUtilization: async (params?: {
+    period?: string;
+    startDate?: string;
+    endDate?: string;
+    aggregated?: boolean;
+  }): Promise<StaffUtilizationResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.period) queryParams.append('period', params.period);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    if (params?.aggregated !== undefined) queryParams.append('aggregated', params.aggregated.toString());
+    
+    const response = await api.get<StaffUtilizationResponse>(`/api/analytics/staff-utilization?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  getRevenueAnalytics: async (params?: {
+    period?: string;
+    startDate?: string;
+    endDate?: string;
+    aggregated?: boolean;
+    compareWithPrevious?: boolean;
+  }): Promise<RevenueAnalyticsResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.period) queryParams.append('period', params.period);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    if (params?.aggregated !== undefined) queryParams.append('aggregated', params.aggregated.toString());
+    if (params?.compareWithPrevious !== undefined) queryParams.append('compareWithPrevious', params.compareWithPrevious.toString());
+    
+    const response = await api.get<RevenueAnalyticsResponse>(`/api/analytics/revenue?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  getSystemUsage: async (params?: {
+    period?: string;
+    startDate?: string;
+    endDate?: string;
+    aggregated?: boolean;
+  }): Promise<SystemUsageResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.period) queryParams.append('period', params.period);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    if (params?.aggregated !== undefined) queryParams.append('aggregated', params.aggregated.toString());
+    
+    const response = await api.get<SystemUsageResponse>(`/api/analytics/system-usage?${queryParams.toString()}`);
     return response.data;
   },
 };

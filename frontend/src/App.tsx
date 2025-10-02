@@ -14,6 +14,8 @@ import StaffLoginPage from './pages/staffLogin';
 import ManagerDashboard from './pages/managerDashboard';
 import ManagerMenu from './pages/managerMenu';
 import ManagerStaff from './pages/managerStaff';
+import ManagerShifts from './pages/managerShifts';
+import ManagerAnalytics from './pages/managerAnalytics';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -46,6 +48,14 @@ function App() {
       <Route 
         element={<ProtectedRoute allowedRoles={['manager','admin']} element={<ManagerStaff/>} />} 
         path="/manager/staff" 
+      />
+      <Route 
+        element={<ProtectedRoute allowedRoles={['manager','admin']} element={<ManagerShifts/>} />} 
+        path="/manager/shifts" 
+      />
+      <Route 
+        element={<ProtectedRoute allowedRoles={['manager','admin']} element={<ManagerAnalytics/>} />} 
+        path="/manager/analytics" 
       />
       <Route element={<DocsPage />} path="/docs" />
       <Route element={<PricingPage />} path="/pricing" />

@@ -35,6 +35,9 @@ project/
 ```
 
 ## Quick Start
+Windows:
+.\start.bat
+
 ```bash
 # Clean start
 docker compose down -v

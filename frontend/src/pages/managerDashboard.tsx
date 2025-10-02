@@ -59,19 +59,33 @@ export default function ManagerDashboard() {
             </Button>
           </div>
 
-          {/* Analytics Card - Placeholder */}
+          {/* Shift Applications Card */}
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h3 className="text-xl font-semibold text-white mb-3">Shift Applications</h3>
+            <p className="text-gray-300 mb-4">
+              Review and approve staff shift applications with time conflict warnings.
+            </p>
+            <Button 
+              color="warning"
+              className="w-full"
+              onPress={() => navigate('/manager/shifts')}
+            >
+              Review Applications
+            </Button>
+          </div>
+
+          {/* Analytics Card */}
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 className="text-xl font-semibold text-white mb-3">Analytics</h3>
             <p className="text-gray-300 mb-4">
-              View sales reports, order analytics, and performance metrics.
+              View sales reports, menu performance, staff utilization, and revenue analytics.
             </p>
             <Button 
-              color="default"
-              variant="flat"
+              color="primary"
               className="w-full"
-              isDisabled
+              onPress={() => navigate('/manager/analytics')}
             >
-              Coming Soon
+              View Analytics
             </Button>
           </div>
 
