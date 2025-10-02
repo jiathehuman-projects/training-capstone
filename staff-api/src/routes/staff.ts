@@ -15,7 +15,10 @@ import {
   getWeeklySchedule,
   getAllStaff,
   getAllApplicationsForManager,
-  approveAndAssignApplication
+  approveAndAssignApplication,
+  createStaffMember,
+  updateStaffMember,
+  deleteStaffMember
 } from "../controllers/staff";
 import {
   createTimeOffRequest,
@@ -60,5 +63,10 @@ staffRouter.get("/timeoff", authentication, getTimeOffRequests);
 staffRouter.delete("/timeoff/:requestId", authentication, withdrawTimeOffRequest);
 staffRouter.put("/timeoff/:requestId/approve", authentication, requireManagerOrAdmin, approveTimeOffRequest);
 staffRouter.put("/timeoff/:requestId/deny", authentication, requireManagerOrAdmin, denyTimeOffRequest);
+
+// Staff Management endpoints (CRUD) - manager only
+staffRouter.post("/create", authentication, requireManagerOrAdmin, createStaffMember);
+staffRouter.put("/:id/update", authentication, requireManagerOrAdmin, updateStaffMember);
+staffRouter.delete("/:id", authentication, requireManagerOrAdmin, deleteStaffMember);
 
 export default staffRouter;

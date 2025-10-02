@@ -89,53 +89,7 @@ export default function ManagerDashboard() {
             </Button>
           </div>
 
-          {/* Orders Management Card - Placeholder */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-xl font-semibold text-white mb-3">Orders Management</h3>
-            <p className="text-gray-300 mb-4">
-              Monitor active orders, update statuses, and track kitchen operations.
-            </p>
-            <Button 
-              color="default"
-              variant="flat"
-              className="w-full"
-              isDisabled
-            >
-              Coming Soon
-            </Button>
-          </div>
 
-          {/* Settings Card - Placeholder */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-xl font-semibold text-white mb-3">Settings</h3>
-            <p className="text-gray-300 mb-4">
-              Configure restaurant settings, payment options, and system preferences.
-            </p>
-            <Button 
-              color="default"
-              variant="flat"
-              className="w-full"
-              isDisabled
-            >
-              Coming Soon
-            </Button>
-          </div>
-
-          {/* Reports Card - Placeholder */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-xl font-semibold text-white mb-3">Reports</h3>
-            <p className="text-gray-300 mb-4">
-              Generate detailed reports for sales, inventory, and staff performance.
-            </p>
-            <Button 
-              color="default"
-              variant="flat"
-              className="w-full"
-              isDisabled
-            >
-              Coming Soon
-            </Button>
-          </div>
         </div>
       </div>
     </DefaultLayout>

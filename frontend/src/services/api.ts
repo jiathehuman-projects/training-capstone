@@ -298,6 +298,27 @@ export interface StaffMember {
   createdAt: string;
 }
 
+export interface CreateStaffMemberRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  username: string;
+  roles: string[];
+  workerRoles: string[];
+  staffStatus: 'active' | 'unavailable' | 'inactive';
+}
+
+export interface UpdateStaffMemberRequest {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  roles?: string[];
+  workerRoles?: string[];
+  staffStatus?: 'active' | 'unavailable' | 'inactive';
+}
+
 export interface StaffResponse {
   staff: StaffMember[];
   total: number;
@@ -509,6 +530,22 @@ export const shiftAPI = {
 
   declineApplication: async (applicationId: number): Promise<void> => {
     await api.put(`/api/staff/application/${applicationId}/decline`);
+  },
+
+  // Staff Management API functions
+  createStaffMember: async (data: CreateStaffMemberRequest): Promise<StaffMember> => {
+    const response = await api.post<{message: string, staff: StaffMember}>('/api/staff/create', data);
+    return response.data.staff;
+  },
+
+  updateStaffMember: async (id: string, data: UpdateStaffMemberRequest): Promise<StaffMember> => {
+    const response = await api.put<{message: string, staff: StaffMember}>(`/api/staff/${id}/update`, data);
+    return response.data.staff;
+  },
+
+  deleteStaffMember: async (id: string): Promise<{message: string, removedAssignments: number, removedApplications: number}> => {
+    const response = await api.delete<{message: string, removedAssignments: number, removedApplications: number}>(`/api/staff/${id}`);
+    return response.data;
   },
 };
 

@@ -1208,3 +1208,270 @@ export const approveAndAssignApplication = async (req: AuthenticatedRequest, res
     });
   }
 };
+
+// Staff Management Functions (Create, Update, Delete)
+
+interface CreateStaffRequest extends AuthenticatedRequest {
+  body: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    username: string;
+    roles: string[];
+    workerRoles: string[];
+    staffStatus: string;
+  };
+}
+
+interface UpdateStaffRequest extends AuthenticatedRequest {
+  body: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    roles?: string[];
+    workerRoles?: string[];
+    staffStatus?: string;
+  };
+}
+
+export const createStaffMember = async (req: CreateStaffRequest, res: Response) => {
+  try {
+    if (!isManagerUser(req.currentUser!)) {
+      return res.status(403).json({
+        error: 'Access denied: Manager role required'
+      });
+    }
+
+    const { firstName, lastName, email, phone, username, roles, workerRoles, staffStatus } = req.body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !email || !username || !roles || !workerRoles || !staffStatus) {
+      return res.status(400).json({
+        error: 'Missing required fields: firstName, lastName, email, username, roles, workerRoles, and staffStatus are required'
+      });
+    }
+
+    // Check if username already exists
+    const existingUserByUsername = await userRepository.findOne({
+      where: { username }
+    });
+
+    if (existingUserByUsername) {
+      return res.status(400).json({
+        error: 'Username already exists'
+      });
+    }
+
+    // Check if email already exists
+    const existingUserByEmail = await userRepository.findOne({
+      where: { email }
+    });
+
+    if (existingUserByEmail) {
+      return res.status(400).json({
+        error: 'Email already exists'
+      });
+    }
+
+    // Hash the default password (password123)
+    const bcrypt = require('bcrypt');
+    const passwordHash = await bcrypt.hash('password123', 10);
+
+    // Create new staff member
+    const staffMember = userRepository.create({
+      username,
+      email,
+      passwordHash,
+      firstName,
+      lastName,
+      phone: phone || null,
+      profileUrl: null,
+      roles,
+      staffStatus: staffStatus as any,
+      workerRoles,
+      weeklyAvailability: null,
+      resetToken: null,
+      resetTokenExpiry: null
+    });
+
+    const savedStaffMember = await userRepository.save(staffMember);
+
+    return res.status(201).json({
+      message: 'Staff member created successfully',
+      staff: {
+        id: savedStaffMember.id,
+        firstName: savedStaffMember.firstName,
+        lastName: savedStaffMember.lastName,
+        email: savedStaffMember.email,
+        phone: savedStaffMember.phone,
+        username: savedStaffMember.username,
+        roles: savedStaffMember.roles,
+        workerRoles: savedStaffMember.workerRoles,
+        staffStatus: savedStaffMember.staffStatus,
+        createdAt: savedStaffMember.createdAt
+      }
+    });
+
+  } catch (err) {
+    const error = err as Error;
+    console.error('Create staff member error:', error);
+    return res.status(500).json({
+      error: 'Failed to create staff member',
+      message: error.message || 'An unknown error occurred'
+    });
+  }
+};
+
+export const updateStaffMember = async (req: UpdateStaffRequest, res: Response) => {
+  try {
+    if (!isManagerUser(req.currentUser!)) {
+      return res.status(403).json({
+        error: 'Access denied: Manager role required'
+      });
+    }
+
+    const staffId = parseInt(req.params.id);
+    if (isNaN(staffId)) {
+      return res.status(400).json({
+        error: 'Invalid staff ID'
+      });
+    }
+
+    const { firstName, lastName, email, phone, roles, workerRoles, staffStatus } = req.body;
+
+    // Find existing staff member
+    const staffMember = await userRepository.findOne({
+      where: { id: staffId }
+    });
+
+    if (!staffMember) {
+      return res.status(404).json({
+        error: 'Staff member not found'
+      });
+    }
+
+    // Check if email is being changed and already exists
+    if (email && email !== staffMember.email) {
+      const existingUserByEmail = await userRepository.findOne({
+        where: { email }
+      });
+
+      if (existingUserByEmail) {
+        return res.status(400).json({
+          error: 'Email already exists'
+        });
+      }
+    }
+
+    // Update fields
+    if (firstName) staffMember.firstName = firstName;
+    if (lastName) staffMember.lastName = lastName;
+    if (email) staffMember.email = email;
+    if (phone !== undefined) staffMember.phone = phone;
+    if (roles) staffMember.roles = roles;
+    if (workerRoles) staffMember.workerRoles = workerRoles;
+    if (staffStatus) staffMember.staffStatus = staffStatus as any;
+
+    const updatedStaffMember = await userRepository.save(staffMember);
+
+    return res.status(200).json({
+      message: 'Staff member updated successfully',
+      staff: {
+        id: updatedStaffMember.id,
+        firstName: updatedStaffMember.firstName,
+        lastName: updatedStaffMember.lastName,
+        email: updatedStaffMember.email,
+        phone: updatedStaffMember.phone,
+        username: updatedStaffMember.username,
+        roles: updatedStaffMember.roles,
+        workerRoles: updatedStaffMember.workerRoles,
+        staffStatus: updatedStaffMember.staffStatus,
+        createdAt: updatedStaffMember.createdAt,
+        updatedAt: updatedStaffMember.updatedAt
+      }
+    });
+
+  } catch (err) {
+    const error = err as Error;
+    console.error('Update staff member error:', error);
+    return res.status(500).json({
+      error: 'Failed to update staff member',
+      message: error.message || 'An unknown error occurred'
+    });
+  }
+};
+
+export const deleteStaffMember = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!isManagerUser(req.currentUser!)) {
+      return res.status(403).json({
+        error: 'Access denied: Manager role required'
+      });
+    }
+
+    const staffId = parseInt(req.params.id);
+    if (isNaN(staffId)) {
+      return res.status(400).json({
+        error: 'Invalid staff ID'
+      });
+    }
+
+    // Find existing staff member
+    const staffMember = await userRepository.findOne({
+      where: { id: staffId }
+    });
+
+    if (!staffMember) {
+      return res.status(404).json({
+        error: 'Staff member not found'
+      });
+    }
+
+    // Check if staff member has any future assignments that would be affected
+    const today = new Date().toISOString().split('T')[0];
+    const futureAssignments = await shiftAssignmentRepository.find({
+      where: { staffId },
+      relations: ['shift'],
+    });
+
+    const affectedAssignments = futureAssignments.filter((assignment: any) => 
+      assignment.shift && assignment.shift.shiftDate >= today
+    );
+
+    if (affectedAssignments.length > 0) {
+      // Remove future assignments first
+      await shiftAssignmentRepository.remove(affectedAssignments);
+    }
+
+    // Remove any pending applications
+    const pendingApplications = await shiftApplicationRepository.find({
+      where: { 
+        staffId,
+        status: ShiftApplicationStatus.APPLIED
+      }
+    });
+
+    if (pendingApplications.length > 0) {
+      await shiftApplicationRepository.remove(pendingApplications);
+    }
+
+    // Hard delete the staff member
+    await userRepository.remove(staffMember);
+
+    return res.status(200).json({
+      message: 'Staff member deleted successfully',
+      removedAssignments: affectedAssignments.length,
+      removedApplications: pendingApplications.length
+    });
+
+  } catch (err) {
+    const error = err as Error;
+    console.error('Delete staff member error:', error);
+    return res.status(500).json({
+      error: 'Failed to delete staff member',
+      message: error.message || 'An unknown error occurred'
+    });
+  }
+};
