@@ -123,9 +123,9 @@ const ManagerShifts: React.FC = () => {
       <Chip 
         key={role} 
         size="sm" 
-        variant="flat" 
+        variant="solid" 
         color="primary"
-        className="mr-1 mb-1"
+        className="mr-1 mb-1 text-white"
       >
         {role}
       </Chip>
@@ -169,7 +169,7 @@ const ManagerShifts: React.FC = () => {
   return (
     <DefaultLayout>
       <div className="max-w-7xl mx-auto p-6">  
-        <Card>
+        <Card className="bg-gray-800">
           <CardHeader className="pb-3">
             <div className="flex justify-between items-center w-full">
               <div>
@@ -177,10 +177,10 @@ const ManagerShifts: React.FC = () => {
                 <p className="text-gray-300">Review and manage staff shift applications</p>
               </div>
               <div className="flex gap-2">
-                <Chip size="lg" variant="flat" color="warning">
+                <Chip size="lg" variant="solid" color="warning" className="text-white font-semibold">
                   {pendingApplications.length} Pending
                 </Chip>
-                <Chip size="lg" variant="flat" color="default">
+                <Chip size="lg" variant="solid" color="default" className="text-white font-semibold">
                   {applications.length} Total
                 </Chip>
               </div>
@@ -189,7 +189,7 @@ const ManagerShifts: React.FC = () => {
           <Divider />
           <CardBody>
             {applications.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-300">
                 No shift applications found.
               </div>
             ) : (
@@ -216,13 +216,13 @@ const ManagerShifts: React.FC = () => {
                                 <p className="text-sm text-gray-300">
                                   {application.shift ? formatDate(application.shift.shiftDate) : 'Unknown Date'}
                                 </p>
-                                <p className="text-sm text-gray-400">
+                                <p className="text-sm text-gray-300">
                                   {application.shift?.template ? 
                                     `${formatTime(application.shift.template.startTime)} - ${formatTime(application.shift.template.endTime)}` :
                                     'Unknown Time'
                                   }
                                 </p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-300">
                                   {application.shift?.template?.name || 'Unknown Shift'}
                                 </p>
                               </div>
@@ -232,13 +232,14 @@ const ManagerShifts: React.FC = () => {
                                 <p className="text-sm text-gray-300">Desired Role:</p>
                                 <Chip 
                                   size="sm" 
-                                  variant="flat" 
+                                  variant="solid" 
                                   color={application.staffWorkerRoles.includes(application.desiredRole || '') ? 'success' : 'danger'}
+                                  className="text-white font-medium"
                                 >
                                   {application.desiredRole || 'Any'}
                                 </Chip>
                                 {!application.staffWorkerRoles.includes(application.desiredRole || '') && (
-                                  <p className="text-xs text-red-400 mt-1">⚠️ Role mismatch</p>
+                                  <p className="text-xs text-red-300 mt-1 font-medium">⚠️ Role mismatch</p>
                                 )}
                               </div>
 
@@ -247,20 +248,22 @@ const ManagerShifts: React.FC = () => {
                                 <Button
                                   size="sm"
                                   color="success"
-                                  variant="flat"
+                                  variant="solid"
                                   isLoading={processingIds.has(application.id)}
                                   isDisabled={processingIds.has(application.id)}
                                   onPress={() => handleApprove(application.id)}
+                                  className="text-white font-semibold"
                                 >
                                   Approve & Assign
                                 </Button>
                                 <Button
                                   size="sm"
                                   color="danger"
-                                  variant="flat"
+                                  variant="solid"
                                   isLoading={processingIds.has(application.id)}
                                   isDisabled={processingIds.has(application.id)}
                                   onPress={() => handleReject(application.id)}
+                                  className="text-white font-semibold"
                                 >
                                   Reject
                                 </Button>
@@ -268,7 +271,7 @@ const ManagerShifts: React.FC = () => {
                             </div>
 
                             {/* Applied Date */}
-                            <div className="mt-2 text-xs text-gray-500">
+                            <div className="mt-2 text-xs text-gray-300">
                               Applied: {new Date(application.appliedAt).toLocaleString()}
                             </div>
                           </CardBody>
@@ -300,7 +303,7 @@ const ManagerShifts: React.FC = () => {
                                 <p className="text-sm text-gray-300">
                                   {application.shift ? formatDate(application.shift.shiftDate) : 'Unknown Date'}
                                 </p>
-                                <p className="text-sm text-gray-400">
+                                <p className="text-sm text-gray-300">
                                   {application.shift?.template ? 
                                     `${formatTime(application.shift.template.startTime)} - ${formatTime(application.shift.template.endTime)}` :
                                     'Unknown Time'
@@ -310,7 +313,7 @@ const ManagerShifts: React.FC = () => {
 
                               {/* Desired Role */}
                               <div>
-                                <Chip size="sm" variant="flat" color="default">
+                                <Chip size="sm" variant="solid" color="default" className="text-white">
                                   {application.desiredRole || 'Any'}
                                 </Chip>
                               </div>
@@ -319,8 +322,9 @@ const ManagerShifts: React.FC = () => {
                               <div className="flex justify-end">
                                 <Chip 
                                   size="sm" 
-                                  variant="flat" 
+                                  variant="solid" 
                                   color={getStatusColor(application.status)}
+                                  className="text-white font-medium"
                                 >
                                   {application.status.toUpperCase()}
                                 </Chip>
