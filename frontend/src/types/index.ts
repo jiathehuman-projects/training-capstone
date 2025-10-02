@@ -14,7 +14,7 @@ export interface MenuItem {
   description: string;
   photoUrl?: string;
   preparationTimeMin: number;
-  isAvailable: boolean;
+  isActive: boolean;
   hasPromo?: boolean;
   promoPercent?: number;
   promoStartsAt?: string;

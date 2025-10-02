@@ -1,0 +1,1 @@
+SELECT id, name, price, pg_typeof(price) as price_type FROM menu_item WHERE id IN (12, 13, 14) ORDER BY id;

@@ -117,8 +117,8 @@ const calculateTotals = (cart: CartItem[], menuItems: MenuItem[]) => {
     const menuItem = menuItems.find(mi => mi.id === item.menuItemId);
     if (!menuItem) return sum;
     
-    // Use displayPrice which already includes promo calculation from backend
-    let price = menuItem.displayPrice ?? 0;
+    // Use price from API response
+    let price = menuItem.price ?? 0;
     
     return sum + (price * item.quantity);
   }, 0);
@@ -170,7 +170,7 @@ export default function DashboardPage() {
     try {
       setIsLoading(true);
       const items = await orderAPI.getMenuItems();
-      const filteredItems = items.filter(item => item.isAvailable);
+      const filteredItems = items.filter(item => item.isActive);
       setMenuItems(filteredItems);
     } catch (error) {
       console.error("Failed to load menu items:", error);
@@ -306,7 +306,7 @@ export default function DashboardPage() {
         if (!menuItem) {
           throw new Error(`Menu item with ID ${item.menuItemId} not found`);
         }
-        if (!menuItem.isAvailable) {
+        if (!menuItem.isActive) {
           throw new Error(`Menu item "${menuItem.name}" is no longer available`);
         }
         
@@ -490,8 +490,8 @@ export default function DashboardPage() {
   };
 
   const getEffectivePrice = (menuItem: MenuItem) => {
-    // Use displayPrice which already includes promo calculation from backend
-    return menuItem.displayPrice;
+    // Use price from API response
+    return menuItem.price;
   };
 
   const { subtotal, taxAmount, total } = calculateTotals(cart, menuItems);
@@ -769,7 +769,7 @@ function MenuStep({ groupedMenuItems, isLoading, onAddToCart, formatPrice, getEf
             {(items as MenuItem[]).map((item) => {
               const effectivePrice = getEffectivePrice(item);
               const isOnSale = effectivePrice < item.price;
-              const isOutOfStock = !item.isAvailable;
+              const isOutOfStock = !item.isActive;
               
               return (
                 <Card key={item.id} className={`${isOutOfStock ? 'opacity-60' : ''}`}>

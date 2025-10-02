@@ -1,0 +1,1 @@
+SELECT id, order_id, menu_item_id, unit_price, quantity, line_total FROM order_item ORDER BY id DESC LIMIT 5;

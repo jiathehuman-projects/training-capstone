@@ -1,0 +1,1 @@
+SELECT id, subtotal_amount, tax_amount, total_amount FROM "order" ORDER BY id DESC LIMIT 3;

@@ -9,6 +9,20 @@ export const api = axios.create({
   },
 });
 
+// Add request interceptor to include JWT token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Types for API requests and responses
 export interface LoginRequest {
   username: string;
@@ -110,8 +124,7 @@ export interface MenuItem {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  // For order display compatibility
-  isAvailable?: boolean;
+  // For compatibility
   hasPromo?: boolean;
 }
 
@@ -293,7 +306,7 @@ export interface StaffResponse {
 // Order and Menu API functions
 export const orderAPI = {
   getMenuItems: async (): Promise<MenuItem[]> => {
-    const response = await api.get<{message: string, menuItems: MenuItem[]}>('/orders/menu');
+    const response = await api.get<{message: string, menuItems: MenuItem[]}>('/api/menu');
     return response.data.menuItems;
   },
 
