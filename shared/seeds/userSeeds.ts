@@ -16,7 +16,7 @@ export async function seedUsers() {
     {
       username: 'admin',
       email: 'admin@nightrestaurant.com',
-      passwordHash: await bcrypt.hash('admin123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['admin', 'manager'],
       firstName: 'System',
       lastName: 'Administrator',
@@ -40,7 +40,7 @@ export async function seedUsers() {
     {
       username: 'manager1',
       email: 'manager@nightrestaurant.com',
-      passwordHash: await bcrypt.hash('manager123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['manager'],
       firstName: 'Sarah',
       lastName: 'Johnson',
@@ -64,7 +64,7 @@ export async function seedUsers() {
     {
       username: 'server1',
       email: 'mike.server@nightrestaurant.com',
-      passwordHash: await bcrypt.hash('server123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['staff'],
       firstName: 'Mike',
       lastName: 'Davis',
@@ -87,7 +87,7 @@ export async function seedUsers() {
     {
       username: 'server2',
       email: 'lisa.server@nightrestaurant.com',
-      passwordHash: await bcrypt.hash('server123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['staff'],
       firstName: 'Lisa',
       lastName: 'Anderson',
@@ -110,7 +110,7 @@ export async function seedUsers() {
     {
       username: 'server3',
       email: 'james.server@nightrestaurant.com',
-      passwordHash: await bcrypt.hash('server123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['staff'],
       firstName: 'James',
       lastName: 'Wilson',
@@ -134,7 +134,7 @@ export async function seedUsers() {
     {
       username: 'cook1',
       email: 'carlos.cook@nightrestaurant.com',
-      passwordHash: await bcrypt.hash('cook123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['staff'],
       firstName: 'Carlos',
       lastName: 'Rodriguez',
@@ -157,7 +157,7 @@ export async function seedUsers() {
     {
       username: 'cook2',
       email: 'maria.cook@nightrestaurant.com',
-      passwordHash: await bcrypt.hash('cook123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['staff'],
       firstName: 'Maria',
       lastName: 'Garcia',
@@ -181,7 +181,7 @@ export async function seedUsers() {
     {
       username: 'server_inactive',
       email: 'inactive@nightrestaurant.com',
-      passwordHash: await bcrypt.hash('inactive123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['staff'],
       firstName: 'John',
       lastName: 'Inactive',
@@ -205,7 +205,7 @@ export async function seedUsers() {
     {
       username: 'customer1',
       email: 'john.customer@email.com',
-      passwordHash: await bcrypt.hash('customer123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['customer'],
       firstName: 'John',
       lastName: 'Customer',
@@ -220,7 +220,7 @@ export async function seedUsers() {
     {
       username: 'customer2',
       email: 'jane.customer@email.com',
-      passwordHash: await bcrypt.hash('customer123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['customer'],
       firstName: 'Jane',
       lastName: 'Smith',
@@ -235,7 +235,7 @@ export async function seedUsers() {
     {
       username: 'customer3',
       email: 'bob.customer@email.com',
-      passwordHash: await bcrypt.hash('customer123', 10),
+      passwordHash: await bcrypt.hash('password123', 10),
       roles: ['customer'],
       firstName: 'Bob',
       lastName: 'Johnson',
