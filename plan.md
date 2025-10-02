@@ -34,62 +34,62 @@ Setup Auth &     Core Features    Menu & Orders     Dashboard        Testing &
 
 ### Day 2 (30/9/25) - Core Features & User Roles
 - [x] Role-based access control
-- [ ] Staff management
-  - [ ] Staff CRUD operations
-  - [ ] Role assignment
-  - [ ] Schedule management
-- [ ] Frontend components
-  - [ ] Dashboard layout
-  - [ ] Navigation system
-  - [ ] User profile management
-- [ ] Staff scheduling system
-  - [ ] Calendar interface
-  - [ ] Shift assignment
-  - [ ] Availability tracking
+- [x] Staff management
+  - [x] Staff CRUD operations
+  - [x] Role assignment
+  - [x] Schedule management
+- [x] Frontend components
+  - [x] Dashboard layout
+  - [x] Navigation system
+  - [x] User profile management
+- [x] Staff scheduling system
+  - [x] Calendar interface
+  - [x] Shift assignment
+  - [x] Availability tracking
 
 ### Day 3 (1/10/25) - Menu & Orders Management
 - [x] Menu management system
   - [ ] Category CRUD
   - [x] Item CRUD
-  - [ ] Pricing management
-- [ ] Order processing system
-  - [ ] Cart functionality
-  - [ ] Order status tracking
-  - [ ] Kitchen display system
-- [ ] Inventory tracking
-  - [ ] Stock management
-  - [ ] Low stock alerts
-- [ ] Frontend implementation
-  - [ ] Menu display
-  - [ ] Order creation interface
-  - [ ] Order tracking
+  - [x] Pricing management
+- [x] Order processing system
+  - [x] Cart functionality
+  - [x] Order status tracking
+  - [x] Kitchen display system
+- [x] Inventory tracking
+  - [x] Stock management
+  - [x] Low stock alerts
+- [x] Frontend implementation
+  - [x] Menu display
+  - [x] Order creation interface
+  - [x] Order tracking
 
 ### Day 4 (2/10/25) - Dashboard & Analytics
-- [ ] Reporting system
-  - [ ] Sales reports
-  - [ ] Popular items
+- [x] Reporting system
+  - [x] Sales reports
+  - [x] Popular items
   - [ ] Staff performance
-- [ ] Analytics dashboard
+- [x] Analytics dashboard
   - [ ] Data visualization
   - [ ] Charts and graphs
   - [ ] KPI tracking
-- [ ] Real-time updates
-  - [ ] Order notifications
+- [x] Real-time updates
+  - [x] Order notifications
   - [ ] Stock alerts
   - [ ] Staff notifications
 
 ### Day 5 (3/10/25) - Testing & Deployment
-- [ ] Testing
-  - [ ] Unit tests
-  - [ ] Integration tests
-  - [ ] User acceptance testing (If)
-- [ ] Documentation
-  - [ ] API documentation
+- [x] Testing
+  - [x] Unit tests
+  - [x] Integration tests
+  - [ ] User acceptance testing 
+- [x] Documentation
+  - [x] API documentation
   - [ ] User manual
-  - [ ] Setup guide
-- [ ] Deployment
-  - [ ] Docker configuration
-  - [ ] Environment setup
+  - [x] Setup guide
+- [x] Deployment
+  - [x] Docker configuration
+  - [x] Environment setup
   - [ ] Production build
   - [ ] Deployment checklist
 

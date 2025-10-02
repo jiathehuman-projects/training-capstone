@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { shiftAPI, type Shift, type ShiftApplication, type ShiftAssignment, type TimeOffRequest } from "@/services/api";
 
 type WeekView = 'current' | 'next';
+type ViewMode = 'week' | 'custom';
 
 const formatTime = (time: string): string => {
   const [hours, minutes] = time.split(':');
@@ -75,6 +76,12 @@ export default function StaffShifts() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [weekView, setWeekView] = useState<WeekView>('current');
+  const [viewMode, setViewMode] = useState<ViewMode>('week');
+  const [customDateRange, setCustomDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  });
+  const [isSearching, setIsSearching] = useState(false);
   const [applyingToShift, setApplyingToShift] = useState<number | null>(null);
 
   // Load data on component mount and set up polling
@@ -84,20 +91,29 @@ export default function StaffShifts() {
       const interval = setInterval(loadShiftData, 30000); // Poll every 30 seconds
       return () => clearInterval(interval);
     }
-  }, [user, weekView]);
+  }, [user, weekView, viewMode]);
 
   const loadShiftData = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Calculate date range for current or next week
-      const today = new Date();
-      const startDate = weekView === 'current' 
-        ? today.toISOString().split('T')[0]
-        : new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      // Calculate date range based on view mode
+      let startDate: string;
+      let endDate: string;
       
-      const endDate = new Date(new Date(startDate).getTime() + 13 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      if (viewMode === 'custom') {
+        startDate = customDateRange.startDate;
+        endDate = customDateRange.endDate;
+      } else {
+        // Calculate date range for current or next week
+        const today = new Date();
+        startDate = weekView === 'current' 
+          ? today.toISOString().split('T')[0]
+          : new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        endDate = new Date(new Date(startDate).getTime() + 13 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      }
 
       // Load all data in parallel
       const [shiftsData, applicationsData, myAssignmentsData, timeOffData] = await Promise.all([
@@ -123,6 +139,40 @@ export default function StaffShifts() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCustomSearch = async () => {
+    // Validate date range
+    if (!customDateRange.startDate || !customDateRange.endDate) {
+      addToast({
+        title: "Error",
+        description: "Please select both start and end dates",
+        color: "danger",
+      });
+      return;
+    }
+    
+    if (customDateRange.startDate > customDateRange.endDate) {
+      addToast({
+        title: "Error",
+        description: "End date must be after start date",
+        color: "danger",
+      });
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      await loadShiftData();
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  const handleResetToThisWeek = () => {
+    setViewMode('week');
+    setWeekView('current');
+    setCustomDateRange({ startDate: '', endDate: '' });
   };
 
   const handleApplyToShift = async (shiftId: number, requirementId: number) => {
@@ -267,39 +317,89 @@ export default function StaffShifts() {
         {/* Controls */}
         <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-4 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              {/* Week Toggle */}
+            <div className="flex items-center gap-4 flex-wrap">
+              {/* View Mode Toggle */}
               <div className="flex bg-gray-100 rounded-lg p-1">
                 <button
-                  onClick={() => setWeekView('current')}
+                  onClick={() => { setViewMode('week'); setWeekView('current'); }}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    weekView === 'current'
+                    viewMode === 'week' && weekView === 'current'
                       ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-300 hover:text-white'
+                      : 'text-gray-600 hover:text-blue-600'
                   }`}
                 >
                   This Week
                 </button>
                 <button
-                  onClick={() => setWeekView('next')}
+                  onClick={() => { setViewMode('week'); setWeekView('next'); }}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    weekView === 'next'
+                    viewMode === 'week' && weekView === 'next'
                       ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-300 hover:text-white'
+                      : 'text-gray-600 hover:text-blue-600'
                   }`}
                 >
                   Next Week
                 </button>
+                <button
+                  onClick={() => setViewMode('custom')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'custom'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
+                >
+                  Custom Range
+                </button>
               </div>
+              
+              {/* Custom Date Range Inputs */}
+              {viewMode === 'custom' && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={customDateRange.startDate}
+                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="Start Date"
+                  />
+                  <span className="text-gray-500">to</span>
+                  <input
+                    type="date"
+                    value={customDateRange.endDate}
+                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="End Date"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleCustomSearch}
+                    disabled={isSearching}
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    {isSearching ? 'Searching...' : 'Search'}
+                  </Button>
+                </div>
+              )}
             </div>
 
-            <Button 
-              variant="bordered"
-              onClick={loadShiftData}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Loading...' : 'Refresh'}
-            </Button>
+            <div className="flex items-center gap-2">
+              {viewMode === 'custom' && (
+                <Button 
+                  variant="bordered"
+                  size="sm"
+                  onClick={handleResetToThisWeek}
+                >
+                  Reset to This Week
+                </Button>
+              )}
+              <Button 
+                variant="bordered"
+                onClick={loadShiftData}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Loading...' : 'Refresh'}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -316,11 +416,11 @@ export default function StaffShifts() {
           </div>
         )}
 
-        {/* Two-Section Layout: Desktop side-by-side, Mobile stacked */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Two-Section Layout: Stacked vertically on all screen sizes */}
+        <div className="grid grid-cols-1 gap-8">
           
           {/* My Current Assignments Section */}
-          <div className="lg:col-span-1">
+          <div>
             <h2 className="text-xl font-semibold text-white mb-6">My Current Assignments</h2>
             
             {isLoading ? (
@@ -352,12 +452,9 @@ export default function StaffShifts() {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                    <div className="text-sm text-gray-700">
                       <div>
                         <strong>Time:</strong> {formatTime(assignment.shift?.startTime || '00:00')} - {formatTime(assignment.shift?.endTime || '23:59')}
-                      </div>
-                      <div>
-                        <strong>Role:</strong> {assignment.roleName}
                       </div>
                     </div>
                   </div>
@@ -367,9 +464,9 @@ export default function StaffShifts() {
           </div>
 
           {/* Available Shifts Section */}
-          <div className="lg:col-span-1">
+          <div>
             <h2 className="text-xl font-semibold text-white mb-6">
-              Available Shifts - {weekView === 'current' ? 'This Week' : 'Next Week'}
+              Available Shifts - {viewMode === 'custom' ? 'Custom Range' : (weekView === 'current' ? 'This Week' : 'Next Week')}
             </h2>
           
           {isLoading && shifts.length === 0 ? (
@@ -378,9 +475,12 @@ export default function StaffShifts() {
             </div>
           ) : sortedDates.length === 0 ? (
             <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-8 text-center">
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">No shifts available</h3>
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">No shifts found</h3>
               <p className="text-gray-600">
-                No shifts found for the selected time period.
+                {viewMode === 'custom' 
+                  ? 'No shifts found for the selected date range.'
+                  : 'No shifts found for the selected time period.'
+                }
               </p>
             </div>
           ) : (

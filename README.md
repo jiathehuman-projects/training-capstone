@@ -24,7 +24,8 @@ docker compose up --build
 - **API Gateway**: http://localhost:8080
 - **Customer API**: http://localhost:5000
 - **Staff API**: http://localhost:5001
-- **API Documentation**: http://localhost:5000/api-docs
+- **API Documentation**: [api-documentation.md](./api-documentation.md) (Complete endpoint reference)
+- **Interactive API Docs**: http://localhost:5000/api-docs | http://localhost:5001/api-docs
 
 ### Test Accounts
 - **Customer**: `customer1` / `password123`
@@ -48,15 +49,23 @@ docker compose up --build
 
 | 😃 Completed | ☹️ Not Implemented |
 |---|---|
-| User authentication & authorization | Staff utilization reports |
-| Role-based access control | Password reset functionality |
-| Menu CRUD with image upload | Real-time notifications |
-| Customer ordering system | Export functionality |
-| Analytics & reporting dashboard | Email verification |
-| Visual scheduling calendar | Multi-language support |
-| Popular items analytics | Advanced conflict detection |
-| Basic staff scheduling | Export functionality |
+| User authentication & authorization | Staff utilization reports (partially) |
+| Role-based access control | Password reset functionality (partially) |
+| Menu CRUD with image upload | Export functionality |
+| Customer ordering system | Email verification |
+| Analytics & reporting dashboard | Multi-language support |
+| Visual scheduling calendar | Advanced conflict detection |
+| Popular items analytics | |
+| Basic staff scheduling | |
 | Profile management | |
 | Rate limiting (Nginx-based) | |
+| Real-time notifications | |
 | Docker containerization | |
 | RESTful API design | |
+| **Swagger/OpenAPI documentation** | |
+
+## Database Schema
+
+![Entity Relationship Diagram](erd.png)
+
+The restaurant management system uses a PostgreSQL database with a comprehensive relational schema designed to handle all aspects of restaurant operations. The core entities include Users (customers, staff, managers, admins), MenuItems with categories and pricing, and Orders with associated OrderItems for detailed tracking. The scheduling system is built around Shifts, ShiftTemplates, ShiftRequirements, ShiftApplications, and ShiftAssignments to manage staff scheduling efficiently. TimeOffRequests handle employee vacation and personal time management. All entities use proper foreign key relationships, indexing on frequently queried fields, and TypeORM decorators for seamless object-relational mapping.
