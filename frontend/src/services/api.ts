@@ -80,6 +80,17 @@ export const authAPI = {
     const response = await api.post<AuthResponse>('/auth/register', data);
     return response.data;
   },
+
+  updateProfile: async (data: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    password?: string;
+  }): Promise<AuthResponse> => {
+    const response = await api.put<AuthResponse>('/auth/profile', data);
+    return response.data;
+  },
 };
 
 // Token management functions

@@ -159,3 +159,84 @@ export const login = async (req: LoginRequest, res: Response) => {
     });
   }
 };
+
+interface UpdateProfileRequest extends Request {
+  body: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    password?: string;
+  }
+}
+
+export const updateProfile = async (req: UpdateProfileRequest, res: Response) => {
+  try {
+    const { firstName, lastName, email, phone, password } = req.body;
+    const currentUser = req.currentUser as JwtPayload;
+
+    if (!currentUser) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Find current user
+    const user = await userRepository.findOne({
+      where: { id: currentUser.id }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if email is being changed and if it's already taken
+    if (email && email !== user.email) {
+      const existingUser = await userRepository.findOne({
+        where: { email }
+      });
+      if (existingUser) {
+        return res.status(400).json({
+          error: 'Email already in use'
+        });
+      }
+      user.email = email;
+    }
+
+    // Update fields if provided
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (phone !== undefined) user.phone = phone || null;
+    
+    // Update password if provided
+    if (password) {
+      user.passwordHash = await encrypt_password(password);
+    }
+
+    // Save updated user
+    await userRepository.save(user);
+
+    // Return updated user info
+    return res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        roles: user.roles,
+        staffStatus: user.staffStatus,
+        workerRoles: user.workerRoles,
+        phone: user.phone,
+        profileUrl: user.profileUrl
+      }
+    });
+
+  } catch (err) {
+    const error = err as Error;
+    console.error('Update profile error:', error);
+    return res.status(500).json({
+      error: 'Profile update failed',
+      message: error.message || 'An unknown error occurred'
+    });
+  }
+};

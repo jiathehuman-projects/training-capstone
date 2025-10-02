@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getPrimaryRole } from '@/components/roleUtils';
 import { Button } from "@heroui/button";
 import { addToast } from "@heroui/toast";
 import { title, subtitle } from "@/components/primitives";
 import DefaultLayout from "@/layouts/default";
 import { useAuth } from "@/contexts/AuthContext";
-import { orderAPI, staffMenuAPI, tokenManager, type MenuItem, type CartItem, type Order } from "@/services/api";
+import { orderAPI, staffMenuAPI, tokenManager, authAPI, type MenuItem, type CartItem, type Order, type User } from "@/services/api";
 
 // Simple components to replace HeroUI components
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -97,7 +97,7 @@ const ModalFooter = ({ children }: { children: React.ReactNode }) => (
   <div className="p-6 pt-2 flex justify-end gap-2">{children}</div>
 );
 
-type OrderStep = 'menu' | 'cart' | 'orders';
+type OrderStep = 'menu' | 'cart' | 'orders' | 'account';
 
 // Group menu items by category
 const groupByCategory = (items: MenuItem[]) => {
@@ -133,6 +133,7 @@ const calculateTotals = (cart: CartItem[], menuItems: MenuItem[]) => {
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState<OrderStep>('menu');
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -151,6 +152,20 @@ export default function DashboardPage() {
       else navigate('/manager', { replace: true });
     }
   }, [user, navigate]);
+
+  // Handle URL parameters for tab navigation
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['menu', 'cart', 'orders', 'account'].includes(tab)) {
+      setCurrentStep(tab as OrderStep);
+    }
+  }, [searchParams]);
+
+  // Update URL when step changes
+  const handleStepChange = (step: OrderStep) => {
+    setCurrentStep(step);
+    setSearchParams({ tab: step });
+  };
 
   // Load menu items on component mount
   useEffect(() => {
@@ -267,7 +282,7 @@ export default function DashboardPage() {
       });
       return;
     }
-    setCurrentStep('cart');
+    handleStepChange('cart');
   };
 
   const confirmOrder = async () => {
@@ -357,7 +372,7 @@ export default function DashboardPage() {
       
       // Clear cart and navigate to orders view
       setCart([]);
-      setCurrentStep('orders');
+      handleStepChange('orders');
       
       // Refresh customer orders to show the new order
       await loadCustomerOrders();
@@ -550,14 +565,14 @@ export default function DashboardPage() {
               <Button
                 color={currentStep === 'menu' ? 'primary' : 'default'}
                 variant={currentStep === 'menu' ? 'solid' : 'flat'}
-                onPress={() => setCurrentStep('menu')}
+                onPress={() => handleStepChange('menu')}
               >
                 Menu
               </Button>
               <Button
                 color={currentStep === 'cart' ? 'primary' : 'default'}
                 variant={currentStep === 'cart' ? 'solid' : 'flat'}
-                onPress={() => cart.length > 0 && setCurrentStep('cart')}
+                onPress={() => cart.length > 0 && handleStepChange('cart')}
                 isDisabled={cart.length === 0}
               >
                 Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)})
@@ -565,9 +580,16 @@ export default function DashboardPage() {
               <Button
                 color={currentStep === 'orders' ? 'primary' : 'default'}
                 variant={currentStep === 'orders' ? 'solid' : 'flat'}
-                onPress={() => setCurrentStep('orders')}
+                onPress={() => handleStepChange('orders')}
               >
                 Current Orders ({currentOrders.length})
+              </Button>
+              <Button
+                color={currentStep === 'account' ? 'primary' : 'default'}
+                variant={currentStep === 'account' ? 'solid' : 'flat'}
+                onPress={() => handleStepChange('account')}
+              >
+                Account Settings
               </Button>
             </div>
           </div>
@@ -600,7 +622,7 @@ export default function DashboardPage() {
             onUpdateQuantity={updateCartQuantity}
             onRemoveItem={removeFromCart}
             onClearCart={clearCart}
-            onBackToMenu={() => setCurrentStep('menu')}
+            onBackToMenu={() => handleStepChange('menu')}
             onConfirmOrder={confirmOrder}
             isLoading={isLoading}
           />
@@ -615,6 +637,10 @@ export default function DashboardPage() {
             onCancelOrder={cancelOrder}
             menuItems={menuItems}
           />
+        )}
+
+        {currentStep === 'account' && (
+          <AccountSettingsSection user={user} />
         )}
 
         {/* Order Confirmation Success Modal */}
@@ -1125,6 +1151,192 @@ function CurrentOrdersSection({ orders, isLoading, formatPrice, getStatusColor, 
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Account Settings Section Component
+function AccountSettingsSection({ user }: { user: User | null }) {
+  const [formData, setFormData] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    password: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const { updateUser } = useAuth();
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Prepare update data (only include changed fields)
+      const updateData: any = {};
+      if (formData.firstName !== user?.firstName) updateData.firstName = formData.firstName;
+      if (formData.lastName !== user?.lastName) updateData.lastName = formData.lastName;
+      if (formData.email !== user?.email) updateData.email = formData.email;
+      if (formData.phone !== user?.phone) updateData.phone = formData.phone;
+      if (formData.password.trim()) updateData.password = formData.password;
+
+      if (Object.keys(updateData).length === 0) {
+        addToast({
+          title: "No Changes",
+          description: "No changes to save",
+          color: "warning",
+        });
+        return;
+      }
+
+      const response = await authAPI.updateProfile(updateData);
+      
+      // Update user context
+      updateUser(response.user);
+      
+      // Clear password field
+      setFormData(prev => ({ ...prev, password: '' }));
+      
+      addToast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully",
+        color: "success",
+      });
+      
+    } catch (error: any) {
+      console.error('Profile update error:', error);
+      addToast({
+        title: "Update Failed",
+        description: error.response?.data?.error || "Failed to update profile",
+        color: "danger",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      password: ''
+    });
+  };
+
+  return (
+    <div className="bg-white border border-gray-300 rounded-xl p-6 shadow-lg">
+      <h2 className="text-2xl font-bold text-black mb-6">Account Settings</h2>
+      
+      <div className="space-y-6">
+        {/* Personal Information */}
+        <div>
+          <h3 className="text-lg font-semibold text-black mb-4">Personal Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                First Name
+              </label>
+              <input
+                type="text"
+                value={formData.firstName}
+                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Last Name
+              </label>
+              <input
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone (optional)
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Account Information */}
+        <div>
+          <h3 className="text-lg font-semibold text-black mb-4">Account Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Username (read-only)
+              </label>
+              <input
+                type="text"
+                value={user?.username || ''}
+                disabled
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Password (optional)
+              </label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                placeholder="Leave blank to keep current password"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-4 pt-4 border-t border-gray-200">
+          <Button
+            color="primary"
+            onPress={handleSave}
+            isLoading={isLoading}
+            className="flex-1"
+          >
+            {isLoading ? 'Saving...' : 'Save Changes'}
+          </Button>
+          <Button
+            variant="flat"
+            onPress={handleCancel}
+            disabled={isLoading}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
