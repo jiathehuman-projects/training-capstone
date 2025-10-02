@@ -1,7 +1,7 @@
 require('dotenv').config();
 import 'reflect-metadata';
 import express from 'express';
-import cors from 'cors';
+// import cors from 'cors'; // Disabled - nginx handles CORS
 import { AppDataSource } from '../shared/data-source';
 import authRouter from './routes/auth';
 import orderRouter from './routes/order';
@@ -13,7 +13,7 @@ import path from 'path';
 const app = express();
 
 // Middleware
-app.use(cors());
+// app.use(cors()); // Disabled - nginx handles CORS
 app.use(express.json());
 
 // Health check endpoint

@@ -62,7 +62,7 @@ export default function StaffLoginPage() {
     setIsLoading(true);
     try {
       const payload: LoginRequest = { username: formData.username, password: formData.password };
-      const response = await authAPI.login(payload);
+      const response = await authAPI.staffLogin(payload);
       // Portal mismatch: reject pure customers
       if (isCustomerOnly(response.user.roles)) {
         setErrors({ username: 'Invalid username or password' });

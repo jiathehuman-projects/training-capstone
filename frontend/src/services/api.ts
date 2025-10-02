@@ -57,6 +57,11 @@ export const authAPI = {
     return response.data;
   },
 
+  staffLogin: async (data: LoginRequest): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/portal', data);
+    return response.data;
+  },
+
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>('/auth/register', data);
     return response.data;
