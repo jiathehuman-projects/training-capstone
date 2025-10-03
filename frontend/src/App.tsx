@@ -17,6 +17,7 @@ import ManagerStaff from './pages/managerStaff';
 import ManagerShifts from './pages/managerShifts';
 import ManagerAnalytics from './pages/managerAnalytics';
 import ProtectedRoute from './components/ProtectedRoute';
+import NotFound from './pages/notFound';
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
       <Route element={<PricingPage />} path="/pricing" />
       <Route element={<BlogPage />} path="/blog" />
       <Route element={<AboutPage />} path="/about" />
+      <Route element={<NotFound />} path="*" />
     </Routes>
   );
 }
