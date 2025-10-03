@@ -290,6 +290,37 @@ const ManagerAnalytics: React.FC = () => {
     );
   };
 
+  // System Stats tab content
+  const SystemStatsTab = () => {
+    if (!data.systemUsage) {
+      return <LoadingSkeleton />;
+    }
+
+    const systemMetrics = [
+      { title: 'Total Users', value: data.systemUsage.metadata.totalUsers },
+      { title: 'Active Staff', value: data.systemUsage.metadata.activeStaff },
+      { title: 'Customers', value: data.systemUsage.metadata.customers },
+      { title: 'Orders (Period)', value: data.systemUsage.metadata.ordersInPeriod },
+      { title: 'Completed Orders', value: data.systemUsage.metadata.completedOrdersInPeriod },
+      { title: 'Active Customers', value: data.systemUsage.metadata.uniqueActiveCustomers },
+      { title: 'Completion Rate', value: `${data.systemUsage.metadata.orderCompletionRate}%` },
+      { title: 'Avg Orders/Customer', value: data.systemUsage.metadata.averageOrdersPerCustomer }
+    ];
+
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {systemMetrics.map((metric) => (
+          <Card key={metric.title} className="bg-gray-800 border-gray-700">
+            <CardBody className="text-center p-4">
+              <h3 className="text-sm text-gray-400 mb-2">{metric.title}</h3>
+              <p className="text-2xl font-bold text-white">{metric.value}</p>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
   // Staff tab content
   const StaffTab = () => {
     if (loading) {
@@ -419,6 +450,7 @@ const ManagerAnalytics: React.FC = () => {
           {[
             { key: 'overview', label: 'Overview' },
             { key: 'revenue', label: 'Revenue' },
+            { key: 'system', label: 'System Stats' },
             { key: 'menu', label: 'Menu' },
             { key: 'staff', label: 'Staff' }
           ].map((tab) => (
@@ -438,6 +470,7 @@ const ManagerAnalytics: React.FC = () => {
         <div className="min-h-96">
           {selectedTab === 'overview' && <OverviewTab />}
           {selectedTab === 'revenue' && <RevenueTab />}
+          {selectedTab === 'system' && <SystemStatsTab />}
           {selectedTab === 'menu' && <MenuTab />}
           {selectedTab === 'staff' && <StaffTab />}
         </div>

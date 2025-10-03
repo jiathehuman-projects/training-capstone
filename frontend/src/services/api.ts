@@ -724,8 +724,41 @@ export interface RevenueAnalyticsResponse {
 
 export interface SystemUsageResponse {
   message: string;
-  metadata: AnalyticsMetadata;
-  data: any;
+  metadata: AnalyticsMetadata & {
+    totalUsers: number;
+    activeStaff: number;
+    customers: number;
+    ordersInPeriod: number;
+    completedOrdersInPeriod: number;
+    uniqueActiveCustomers: number;
+    averageOrdersPerCustomer: number;
+    orderCompletionRate: number;
+  };
+  data: {
+    summary?: {
+      peakActivityDay: { date: string; orders: number } | null;
+      averageDailyOrders: number;
+      customerRetentionIndicator: string;
+    };
+    trends?: Array<{
+      date: string;
+      newOrders: number;
+      completedOrders: number;
+      activeUsers: number;
+    }>;
+    dailyActivity?: Array<{
+      date: string;
+      newOrders: number;
+      completedOrders: number;
+      activeUsers: number;
+    }>;
+    userBreakdown?: {
+      totalUsers: number;
+      activeStaff: number;
+      customers: number;
+      inactiveStaff: number;
+    };
+  };
 }
 
 // Analytics API functions

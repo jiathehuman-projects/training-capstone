@@ -32,15 +32,16 @@ const getDateRange = (period: string = 'month', startDate?: string, endDate?: st
   switch (period) {
     case 'today':
       start = today;
+      end = new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1); // End of today
       break;
     case 'yesterday':
       start = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-      end = new Date(today.getTime() - 1);
+      end = new Date(today.getTime() - 1); // End of yesterday
       break;
     case 'week':
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay());
-      start = startOfWeek;
+      // Changed from "Sunday of current week" to "last 7 days" to match frontend label
+      start = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      end = new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1); // End of today
       break;
     case 'last_week':
       const lastWeekStart = new Date(today);
