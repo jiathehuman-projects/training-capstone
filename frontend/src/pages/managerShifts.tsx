@@ -3,16 +3,23 @@ import { Button } from '@heroui/button';
 import { Chip } from '@heroui/chip';
 import { Card, CardBody, CardHeader } from '@heroui/card';
 import { Divider } from '@heroui/divider';
+import { Input } from '@heroui/input';
 import { Spinner } from '@heroui/spinner';
 import { addToast } from '@heroui/toast';
 import DefaultLayout from '../layouts/default';
-import { shiftAPI, type ShiftApplication } from '../services/api';
+import { shiftAPI, type ShiftApplication, type CreateShiftRequest } from '../services/api';
 
 const ManagerShifts: React.FC = () => {
   const [applications, setApplications] = useState<ShiftApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
+  
+  // Shift creation state
+  const [selectedTemplate, setSelectedTemplate] = useState<number>(1);
+  const [shiftDate, setShiftDate] = useState<string>('');
+  const [shiftNotes, setShiftNotes] = useState<string>('');
+  const [creatingShift, setCreatingShift] = useState<boolean>(false);
 
   const fetchApplications = async () => {
     try {
@@ -340,9 +347,210 @@ const ManagerShifts: React.FC = () => {
             )}
           </CardBody>
         </Card>
+
+        {/* Shift Creation Section */}
+        <Card className="bg-gray-900 border-gray-700 mt-6">
+          <CardHeader className="bg-gradient-to-r from-green-900 to-green-800 text-white">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-full">
+                <span className="text-2xl">➕</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Create New Shift</h2>
+                <p className="text-green-100 opacity-90">Schedule a new shift for your team</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardBody className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Template Selection */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-300">Shift Template</label>
+                <div className="space-y-2">
+                  {[
+                    { id: 1, name: 'Standard Evening Service', description: 'Full service team for dinner rush', roles: [{ name: 'Server', count: 4 }, { name: 'Kitchen Staff', count: 3 }, { name: 'Host', count: 1 }] },
+                    { id: 2, name: 'Night Shift Minimal', description: 'Skeleton crew for late hours', roles: [{ name: 'Server', count: 2 }, { name: 'Kitchen Staff', count: 1 }] },
+                    { id: 3, name: 'Morning Prep Team', description: 'Early shift for preparation', roles: [{ name: 'Kitchen Staff', count: 2 }, { name: 'Manager', count: 1 }] }
+                  ].map((template) => (
+                    <Card 
+                      key={template.id}
+                      isPressable
+                      className={`transition-all border ${
+                        selectedTemplate === template.id 
+                          ? 'border-green-500 bg-green-900/20' 
+                          : 'border-gray-600 bg-gray-800 hover:border-gray-500'
+                      }`}
+                      onPress={() => {
+                        console.log('Template selected:', template.id);
+                        setSelectedTemplate(template.id);
+                      }}
+                    >
+                      <CardBody className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-white">{template.name}</h4>
+                            <p className="text-sm text-gray-400 mt-1">{template.description}</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {template.roles.map((role, idx) => {
+                                // Assign colors based on role type
+                                const getRoleColor = (roleName: string) => {
+                                  switch (roleName.toLowerCase()) {
+                                    case 'server':
+                                      return 'primary';
+                                    case 'kitchen staff':
+                                      return 'warning';
+                                    case 'host':
+                                      return 'secondary';
+                                    case 'manager':
+                                      return 'success';
+                                    default:
+                                      return 'default';
+                                  }
+                                };
+                                
+                                return (
+                                  <Chip 
+                                    key={idx} 
+                                    size="sm" 
+                                    variant="solid" 
+                                    color={getRoleColor(role.name)}
+                                    className="text-white font-medium"
+                                  >
+                                    {role.count}x {role.name}
+                                  </Chip>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          <div className={`w-4 h-4 rounded-full border-2 ${
+                            selectedTemplate === template.id 
+                              ? 'border-green-500 bg-green-500' 
+                              : 'border-gray-400'
+                          }`} />
+                        </div>
+                      </CardBody>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Date and Notes */}
+              <div className="space-y-4">
+                <Input
+                  type="date"
+                  label="Shift Date"
+                  value={shiftDate}
+                  onChange={(e) => setShiftDate(e.target.value)}
+                  className="shift-input"
+                  classNames={{
+                    base: "w-full shift-input",
+                    label: "text-gray-300",
+                    input: "!bg-gray-800 !text-white !placeholder:text-gray-400",
+                    inputWrapper: "!bg-gray-800 !border-gray-600 data-[hover=true]:!border-gray-500",
+                    innerWrapper: "!bg-gray-800"
+                  }}
+                  required
+                />
+                
+                <Input
+                  label="Notes (Optional)"
+                  placeholder="Any special instructions or notes for this shift..."
+                  value={shiftNotes}
+                  onChange={(e) => setShiftNotes(e.target.value)}
+                  className="shift-input"
+                  classNames={{
+                    base: "w-full shift-input",
+                    label: "text-gray-300",
+                    input: "!bg-gray-800 !text-white !placeholder:text-gray-400",
+                    inputWrapper: "!bg-gray-800 !border-gray-600 data-[hover=true]:!border-gray-500",
+                    innerWrapper: "!bg-gray-800"
+                  }}
+                />
+              </div>
+            </div>
+
+            <Divider className="bg-gray-700" />
+            
+            <div className="flex justify-end">
+              <Button
+                color="success"
+                size="lg"
+                className="px-8 font-semibold"
+                isLoading={creatingShift}
+                onPress={handleCreateShift}
+                isDisabled={!shiftDate || creatingShift}
+              >
+                {creatingShift ? 'Creating...' : 'Create Shift'}
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
       </div>
     </DefaultLayout>
   );
+
+  // Handle shift creation
+  async function handleCreateShift() {
+    if (!shiftDate) {
+      addToast({
+        title: 'Validation Error',
+        description: 'Please select a shift date',
+        color: 'danger',
+      });
+      return;
+    }
+
+    setCreatingShift(true);
+    
+    try {
+      // Hardcoded template requirements based on selected template
+      const templateRequirements = {
+        1: [ // Standard Evening Service
+          { roleName: 'Server', requiredCount: 4 },
+          { roleName: 'Kitchen Staff', requiredCount: 3 },
+          { roleName: 'Host', requiredCount: 1 }
+        ],
+        2: [ // Night Shift Minimal
+          { roleName: 'Server', requiredCount: 2 },
+          { roleName: 'Kitchen Staff', requiredCount: 1 }
+        ],
+        3: [ // Morning Prep Team
+          { roleName: 'Kitchen Staff', requiredCount: 2 },
+          { roleName: 'Manager', requiredCount: 1 }
+        ]
+      };
+
+      const createRequest: CreateShiftRequest = {
+        templateId: selectedTemplate,
+        shiftDate: shiftDate, // Already in ISO format from date input
+        requirements: templateRequirements[selectedTemplate as keyof typeof templateRequirements],
+        notes: shiftNotes || undefined
+      };
+
+      await shiftAPI.createShift(createRequest);
+      
+      addToast({
+        title: 'Success',
+        description: 'Shift created successfully!',
+        color: 'success',
+      });
+      
+      // Reset form
+      setShiftDate('');
+      setShiftNotes('');
+      setSelectedTemplate(1);
+      
+    } catch (err: any) {
+      console.error('Error creating shift:', err);
+      addToast({
+        title: 'Error',
+        description: err.response?.data?.message || 'Failed to create shift',
+        color: 'danger',
+      });
+    } finally {
+      setCreatingShift(false);
+    }
+  }
 };
 
 export default ManagerShifts;

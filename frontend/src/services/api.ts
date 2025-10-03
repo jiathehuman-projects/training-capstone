@@ -287,6 +287,16 @@ export interface ApplyToShiftRequest {
   desiredRequirementId?: number;
 }
 
+export interface CreateShiftRequest {
+  templateId: number;
+  shiftDate: string;
+  requirements: {
+    roleName: string;
+    requiredCount: number;
+  }[];
+  notes?: string;
+}
+
 export interface TimeOffRequest {
   id: number;
   staffId: number;
@@ -576,6 +586,10 @@ export const shiftAPI = {
 
   declineApplication: async (applicationId: number): Promise<void> => {
     await api.put(`/api/staff/application/${applicationId}/decline`);
+  },
+
+  createShift: async (data: CreateShiftRequest): Promise<void> => {
+    await api.post('/api/staff/shift', data);
   },
 
   // Staff Management API functions
