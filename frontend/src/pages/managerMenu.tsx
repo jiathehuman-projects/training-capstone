@@ -755,7 +755,7 @@ export default function ManagerMenu() {
                         Set a temporary discount for this menu item
                       </p>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-4">
                         <Input
                           label="Discount (%)"
                           placeholder="e.g., 20"
@@ -766,21 +766,34 @@ export default function ManagerMenu() {
                           value={formData.promoPercent}
                           onValueChange={(value: string) => setFormData({ ...formData, promoPercent: value })}
                           description="Percentage discount (0-100%)"
+                          className="max-w-xs"
                         />
-                        <Input
-                          label="Start Date & Time"
-                          type="datetime-local"
-                          value={formData.promoStartsAt}
-                          onValueChange={(value: string) => setFormData({ ...formData, promoStartsAt: value })}
-                          description="When promotion begins"
-                        />
-                        <Input
-                          label="End Date & Time"
-                          type="datetime-local"
-                          value={formData.promoEndsAt}
-                          onValueChange={(value: string) => setFormData({ ...formData, promoEndsAt: value })}
-                          description="When promotion ends"
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Input
+                            label="Start Date & Time"
+                            type="datetime-local"
+                            value={formData.promoStartsAt}
+                            onValueChange={(value: string) => setFormData({ ...formData, promoStartsAt: value })}
+                            description="When promotion begins"
+                            labelPlacement="outside"
+                            classNames={{
+                              label: "text-sm font-medium mb-2",
+                              inputWrapper: "min-h-[48px]"
+                            }}
+                          />
+                          <Input
+                            label="End Date & Time"
+                            type="datetime-local"
+                            value={formData.promoEndsAt}
+                            onValueChange={(value: string) => setFormData({ ...formData, promoEndsAt: value })}
+                            description="When promotion ends"
+                            labelPlacement="outside"
+                            classNames={{
+                              label: "text-sm font-medium mb-2",
+                              inputWrapper: "min-h-[48px]"
+                            }}
+                          />
+                        </div>
                       </div>
                       
                       {formData.promoPercent && formData.price && (

@@ -1,4 +1,5 @@
 # 🚀 Personal Stand-up Report
+
 **Period**: Sep 29 - Oct 2, 2025 (4 days)  
 **Project**: Restaurant Management System - Night Bao 夜包子
 
