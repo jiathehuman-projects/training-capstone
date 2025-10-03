@@ -80,7 +80,7 @@
       - customer-api
       - staff-api
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 3

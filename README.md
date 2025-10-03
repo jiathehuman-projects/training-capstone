@@ -40,6 +40,56 @@ docker compose up --build
 
 ## System Architecture
 
+### Container Architecture Overview
+
+```
+                    ┌─────────────────────────────┐
+                    │       Frontend              │
+                    │    React + Vite :3000       │
+                    └─────────────┬───────────────┘
+                                  │
+                    ┌─────────────┴───────────────┐
+                    │     Nginx API Gateway       │
+                    │      Load Balancer :8080    │
+                    └─────────────┬───────────────┘
+                                  │
+                    ┌─────────────┴───────────────┐
+                    │                            │
+          ┌─────────┴─────────┐        ┌─────────┴─────────┐
+          │   Customer API    │        │    Staff API      │
+          │ Node.js + Express │        │ Node.js + Express │
+          │      :5000        │        │      :5001        │
+          └─────────┬─────────┘        └─────────┬─────────┘
+                    │                            │
+          ┌─────────┴────────────────────────────┴─────────┐
+          │            PostgreSQL Database                 │
+          │          Data Persistence :5432                │
+          └────────────────────────────────────────────────┘
+```
+
+### Container Descriptions
+
+- **Frontend Container (restaurant_frontend)**  
+Serves the React TypeScript single-page application with HeroUI components and Tailwind CSS styling. Handles all user interface rendering, client-side routing, and API communication for customers, staff, and managers.
+
+- **Nginx Container (restaurant_nginx)**  
+Acts as a reverse proxy and API gateway, routing incoming requests to appropriate microservices based on URL patterns. Provides load balancing, CORS handling, rate limiting, and centralized SSL termination for production deployments.
+
+- **Customer API Container (restaurant_customer_api)**  
+Manages all customer-facing operations including authentication, registration, menu browsing, order placement, and order tracking. Implements JWT-based authentication and handles customer-specific business logic with role-based access control.
+
+- **Staff API Container (restaurant_staff_api)**  
+Handles staff and management operations including shift scheduling, order fulfillment, analytics dashboards, and administrative functions. Provides manager-specific endpoints for staff management, shift creation, and comprehensive reporting features.
+
+- **PostgreSQL Container (restaurant_postgres)**  
+Serves as the centralized relational database storing all application data with proper foreign key relationships and indexing. Maintains data consistency across microservices and handles complex queries for analytics, scheduling, and order management.
+
+### Microservices Architecture Benefits
+
+- **Nginx Gateway Necessity**: The API gateway provides essential request routing, CORS policy enforcement, and rate limiting protection while enabling seamless service discovery and load distribution. It acts as a single entry point that abstracts the underlying microservice complexity from frontend clients. Additionally, it facilitates horizontal scaling by distributing traffic across multiple service instances and provides centralized monitoring and logging capabilities.
+
+- **Separation of Customer and Staff APIs**: Isolating customer and staff operations into separate services enables independent scaling based on different usage patterns and performance requirements. This architectural separation improves security by creating distinct authentication boundaries and reduces the blast radius of potential service failures. Furthermore, it allows development teams to work independently on different service domains while maintaining clean API contracts and deployment isolation.
+
 - **Microservices Design**: Separate customer-api and staff-api services with shared PostgreSQL database  
 - **Frontend**: React TypeScript SPA with HeroUI components and Tailwind CSS  
 - **API Gateway**: Nginx reverse proxy routing requests to appropriate microservices  
