@@ -114,19 +114,6 @@ export const Navbar = () => {
             </NavbarItem>
           </>
         )}
-        <NavbarItem>
-          <Link
-            href="/order"
-            className={buttonStyles({
-              variant: "bordered",
-              radius: "full", 
-              size: "sm",
-              class: "border-white text-white hover:border-blue-400 hover:text-blue-400 ml-2"
-            })}
-          >
-            Order Now
-          </Link>
-        </NavbarItem>
       </NavbarContent>
     </HeroUINavbar>
   );
